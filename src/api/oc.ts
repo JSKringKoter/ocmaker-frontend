@@ -58,3 +58,13 @@ export const getOcBaseInfo = async () => {
 export const getOcDetail = async (ocId: number) => {
   return request.get(`/oc/detail/${ocId}`)
 }
+
+// 添加更新OC详情的API函数
+export const updateOcDetail = async (ocId: number, data: OcDetail) => {
+  return request.put(`/oc/detail/${ocId}`, data)
+}
+
+// 删除OC的API函数
+export const deleteOc = async (ocId: number) => {
+  return request.delete(`/oc/delete/${ocId}`)
+}

@@ -15,7 +15,7 @@
           </div>
           
           <div class="form-row">
-            <div class="form-group third">
+            <div class="form-group half">
               <label>性别 <span class="required">*</span></label>
               <input 
                 v-model="character.gender" 
@@ -25,7 +25,7 @@
               >
             </div>
   
-            <div class="form-group third">
+            <div class="form-group half">
               <label>年龄 <span class="required">*</span></label>
               <input 
                 v-model.number="character.age" 
@@ -36,20 +36,7 @@
               >
             </div>
   
-            <div class="form-group third">
-              <label>体重(kg) <span class="required">*</span></label>
-              <input 
-                v-model.number="character.weight" 
-                type="number"
-                min="0" 
-                required
-                placeholder="角色体重"
-              >
-            </div>
-          </div>
-  
-          <div class="form-row">
-            <div class="form-group third">
+            <div class="form-group half">
               <label>身高(cm) <span class="required">*</span></label>
               <input 
                 v-model.number="character.height" 
@@ -60,7 +47,23 @@
               >
             </div>
   
-            <div class="form-group third">
+            <div class="form-group half">
+              <label>体重(kg) <span class="required">*</span></label>
+              <input 
+                v-model.number="character.weight" 
+                type="number"
+                min="0" 
+                required
+                placeholder="角色体重"
+              >
+            </div>
+          </div>
+        </div>
+  
+        <div class="form-section half">
+          <h2>外观特征</h2>
+          <div class="form-row">
+            <div class="form-group half">
               <label>肤色</label>
               <input 
                 v-model="character.skinColor" 
@@ -69,21 +72,7 @@
                 placeholder="描述肤色"
               >
             </div>
-  
-            <div class="form-group third">
-              <label>瞳色</label>
-              <input 
-                v-model="character.eyesColor" 
-                type="text"
-                maxlength="16"
-                placeholder="描述瞳色"
-              >
-            </div>
           </div>
-        </div>
-  
-        <div class="form-section half">
-          <h2>外观特征</h2>
           <div class="form-row">
             <div class="form-group half">
               <label>发型</label>
@@ -101,6 +90,15 @@
                 type="text"
                 maxlength="16"
                 placeholder="描述发色"
+              >
+            </div>
+            <div class="form-group half">
+              <label>瞳色</label>
+              <input 
+                v-model="character.eyesColor" 
+                type="text"
+                maxlength="16"
+                placeholder="描述瞳色"
               >
             </div>
           </div>
@@ -161,7 +159,7 @@
       </div>
   
       <div class="form-actions">
-        <el-button @click="$emit('cancel')">
+        <el-button @click="handleCancel">
           <el-icon><Close /></el-icon>
           取消
         </el-button>
@@ -188,9 +186,9 @@
         character: {
           name: '',
           gender: '',
-          age: 0,
-          height: 0,
-          weight: 0,
+          age: NaN,
+          height: NaN,
+          weight: NaN,
           skinColor: '',
           hair: '',
           hairColor: '',
@@ -205,6 +203,27 @@
     },
   
     methods: {
+      handleCancel() {
+        // 重置表单数据
+        this.character = {
+          name: '',
+          gender: '',
+          age: NaN,
+          height: NaN,
+          weight: NaN,
+          skinColor: '',
+          hair: '',
+          hairColor: '',
+          eyesColor: '',
+          body: '',
+          face: '',
+          personality: '',
+          skill: '',
+          hobby: ''
+        }
+        // 触发取消事件
+        this.$emit('cancel')
+      },
       async handleSubmit() {
         // 表单验证
         if (!this.character.name) {
@@ -255,7 +274,9 @@
   
   .new-oc {
     position: relative;
-    padding-bottom: 60px;
+    height: calc(80vh - 120px);
+    overflow-y: auto;
+    padding: 20px;
   }
   
   .character-form {
@@ -265,23 +286,27 @@
   }
   
   .form-section {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
   }
   
   .form-section h2 {
     color: #2d3748;
-    font-size: 1.5em;
-    margin-bottom: 20px;
+    font-size: 16px;
+    margin-bottom: 16px;
+    padding-bottom: 6px;
   }
   
   .form-row {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 20px;
+    gap: 16px;
+    margin-bottom: 16px;
   }
   
   .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
   }
   
   .form-group.half {
@@ -294,9 +319,10 @@
   
   label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     font-weight: 500;
     color: #2c3e50;
+    font-size: 14px;
   }
   
   input, select, textarea {
@@ -306,6 +332,7 @@
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.8);
     transition: all 0.3s ease;
+    font-size: 14px;
   }
   
   input:focus, select:focus, textarea:focus {
@@ -316,19 +343,14 @@
   
   textarea {
     resize: vertical;
-    min-height: 100px;
+    min-height: 80px;
+    max-height: 120px;
   }
   
   .form-actions {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    padding: 16px 0;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(5px);
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    width: 100%;
+    padding: 20px 0 0 0;
     text-align: right;
+    margin-top: 20px;
   }
   
   .form-actions button {
@@ -341,17 +363,17 @@
   }
   
   ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
+    background: #f1f1f1;
     border-radius: 3px;
   }
   
   ::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
+    background: #c1c1c1;
     border-radius: 3px;
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.3);
+    background: #a8a8a8;
   }
   
   /* 响应式设计 */
@@ -432,15 +454,9 @@
   }
   
   .form-actions {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    padding: 20px 24px;  /* 增加底部操作区内边距 */
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(5px);
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    width: 100%;
+    padding: 20px 0 0 0;
     text-align: right;
+    margin-top: 20px;
   }
   
   .form-actions button {
@@ -475,8 +491,8 @@
   
   .form-row-sections {
     display: flex;
-    gap: 32px;
-    margin-bottom: 24px;
+    gap: 20px;
+    margin-bottom: 20px;
   }
   
   .form-section.half {
@@ -516,5 +532,65 @@
   .required {
     color: #f56c6c;
     margin-left: 4px;
+  }
+  
+  /* 添加对话框样式覆盖 */
+  :deep(.el-dialog) {
+    width: 60% !important;
+    height: 80vh !important;
+    margin: 10vh auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+  }
+  
+  :deep(.el-dialog__body) {
+    padding: 0 !important;
+    overflow: hidden !important;
+    flex: 1;
+    min-height: 0;
+  }
+  
+  /* 确保遮罩层正确显示 */
+  :deep(.el-overlay) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden !important;
+  }
+  
+  /* 响应式调整 */
+  @media screen and (max-width: 1200px) {
+    :deep(.el-dialog) {
+      width: 75% !important;
+    }
+  }
+  
+  @media screen and (max-width: 768px) {
+    :deep(.el-dialog) {
+      width: 90% !important;
+    }
+  }
+  
+  @media screen and (max-height: 800px) {
+    :deep(.el-dialog) {
+      height: 85vh !important;
+      margin: 7.5vh auto !important;
+    }
+    
+    .new-oc {
+      height: calc(85vh - 120px);
+    }
+  }
+  
+  @media screen and (max-height: 600px) {
+    :deep(.el-dialog) {
+      height: 90vh !important;
+      margin: 5vh auto !important;
+    }
+    
+    .new-oc {
+      height: calc(90vh - 120px);
+    }
   }
   </style>

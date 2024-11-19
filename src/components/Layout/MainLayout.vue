@@ -31,6 +31,8 @@
       direction="ltr"
       size="250px"
       :with-header="false"
+      :modal="true"
+      :append-to-body="true"
       class="sidebar-drawer"
     >
       <div class="sidebar">
@@ -113,6 +115,8 @@ export default defineComponent({
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  position: relative;
 }
 
 .header {
@@ -128,6 +132,7 @@ export default defineComponent({
   left: 0;
   right: 0;
   z-index: 100;
+  width: 100%;
 }
 
 .header-left {
@@ -172,15 +177,21 @@ export default defineComponent({
 
 .main-content {
   margin-top: 60px;
-  flex: 1;
-  background: #f8f9fa;
   padding: 20px;
+  flex: 1;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  position: relative;
+  background: #f8f9fa;
 }
 
 .sidebar {
   height: 100%;
   display: flex;
   flex-direction: column;
+  background: white;
 }
 
 .sidebar-header {
@@ -203,7 +214,31 @@ export default defineComponent({
   gap: 12px;
 }
 
+:deep(.el-drawer) {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
 :deep(.el-drawer__body) {
   padding: 0;
+  overflow: hidden;
+}
+
+:deep(.el-drawer__container) {
+  position: fixed;
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 768px) {
+  .header {
+    padding: 0 10px;
+  }
+  
+  .main-content {
+    padding: 15px;
+  }
+  
+  .header-left h2 {
+    font-size: 1.2rem;
+  }
 }
 </style> 
