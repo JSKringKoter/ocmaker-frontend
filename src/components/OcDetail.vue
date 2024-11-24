@@ -1,120 +1,135 @@
 <template>
   <div v-if="ocDetail" class="oc-detail-container">
-    <div class="oc-detail">
-      <div class="detail-section">
-        <h3>基本信息</h3>
-        <div class="detail-grid basic-info-grid">
-          <div class="detail-item">
-            <label>性别</label>
-            <span :class="{ 'empty-value': !ocDetail.gender }">
-              {{ ocDetail.gender || '没有内容' }}
-            </span>
+    <div class="left-section">
+      <div class="oc-detail">
+        <!-- 基本信息卡片 -->
+        <div class="detail-card">
+          <div class="card-header">
+            <h3>基本信息</h3>
           </div>
-          <div class="detail-item">
-            <label>年龄</label>
-            <span :class="{ 'empty-value': !ocDetail.age }">
-              {{ ocDetail.age ? `${ocDetail.age}岁` : '没有内容' }}
-            </span>
-          </div>
-          <div class="detail-item">
-            <label>身高</label>
-            <span :class="{ 'empty-value': !ocDetail.height }">
-              {{ ocDetail.height ? `${ocDetail.height}cm` : '没有内容' }}
-            </span>
-          </div>
-          <div class="detail-item">
-            <label>体重</label>
-            <span :class="{ 'empty-value': !ocDetail.weight }">
-              {{ ocDetail.weight ? `${ocDetail.weight}kg` : '没有内容' }}
-            </span>
+          <div class="card-content">
+            <div class="detail-grid">
+              <div class="detail-item">
+                <label>性别</label>
+                <span :class="{ 'empty-value': !ocDetail.gender }">
+                  {{ ocDetail.gender || '没有内容' }}
+                </span>
+              </div>
+              <div class="detail-item">
+                <label>年龄</label>
+                <span :class="{ 'empty-value': !ocDetail.age }">
+                  {{ ocDetail.age ? `${ocDetail.age}岁` : '没有内容' }}
+                </span>
+              </div>
+              <div class="detail-item">
+                <label>身高</label>
+                <span :class="{ 'empty-value': !ocDetail.height }">
+                  {{ ocDetail.height ? `${ocDetail.height}cm` : '没有内容' }}
+                </span>
+              </div>
+              <div class="detail-item">
+                <label>体重</label>
+                <span :class="{ 'empty-value': !ocDetail.weight }">
+                  {{ ocDetail.weight ? `${ocDetail.weight}kg` : '没有内容' }}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="detail-section">
-        <h3>外貌特征</h3>
-        <div class="detail-grid appearance-grid">
-          <div class="detail-item">
-            <label>肤色</label>
-            <span :class="{ 'empty-value': !ocDetail.skinColor }">
-              {{ ocDetail.skinColor || '没有内容' }}
-            </span>
+        <!-- 外貌特征卡片 -->
+        <div class="detail-card">
+          <div class="card-header">
+            <h3>外貌特征</h3>
           </div>
-          <div class="detail-item">
-            <label>发型</label>
-            <span :class="{ 'empty-value': !ocDetail.hair }">
-              {{ ocDetail.hair || '没有内容' }}
-            </span>
-          </div>
-          <div class="detail-item">
-            <label>发色</label>
-            <span :class="{ 'empty-value': !ocDetail.hairColor }">
-              {{ ocDetail.hairColor || '没有内容' }}
-            </span>
-          </div>
-          <div class="detail-item">
-            <label>瞳色</label>
-            <span :class="{ 'empty-value': !ocDetail.eyesColor }">
-              {{ ocDetail.eyesColor || '没有内容' }}
-            </span>
+          <div class="card-content">
+            <div class="detail-grid">
+              <div class="detail-item">
+                <label>肤色</label>
+                <span :class="{ 'empty-value': !ocDetail.skinColor }">
+                  {{ ocDetail.skinColor || '没有内容' }}
+                </span>
+              </div>
+              <div class="detail-item">
+                <label>发型</label>
+                <span :class="{ 'empty-value': !ocDetail.hair }">
+                  {{ ocDetail.hair || '没有内容' }}
+                </span>
+              </div>
+              <div class="detail-item">
+                <label>发色</label>
+                <span :class="{ 'empty-value': !ocDetail.hairColor }">
+                  {{ ocDetail.hairColor || '没有内容' }}
+                </span>
+              </div>
+              <div class="detail-item">
+                <label>瞳色</label>
+                <span :class="{ 'empty-value': !ocDetail.eyesColor }">
+                  {{ ocDetail.eyesColor || '没有内容' }}
+                </span>
+              </div>
+            </div>
+            <div class="detail-text">
+              <label>身体特征</label>
+              <p :class="{ 'empty-value': !ocDetail.body }">
+                {{ ocDetail.body || '没有内容' }}
+              </p>
+            </div>
+            <div class="detail-text">
+              <label>面部特征</label>
+              <p :class="{ 'empty-value': !ocDetail.face }">
+                {{ ocDetail.face || '没有内容' }}
+              </p>
+            </div>
           </div>
         </div>
-        <div class="detail-text">
-          <label>身体特征</label>
-          <p :class="{ 'empty-value': !ocDetail.body }">
-            {{ ocDetail.body || '没有内容' }}
-          </p>
-        </div>
-        <div class="detail-text">
-          <label>面部特征</label>
-          <p :class="{ 'empty-value': !ocDetail.face }">
-            {{ ocDetail.face || '没有内容' }}
-          </p>
-        </div>
-      </div>
 
-      <div class="detail-section">
-        <h3>个性特征</h3>
-        <div class="detail-text">
-          <label>性格特点</label>
-          <p :class="{ 'empty-value': !ocDetail.personality }">
-            {{ ocDetail.personality || '没有内容' }}
-          </p>
+        <!-- 个性特征卡片 -->
+        <div class="detail-card">
+          <div class="card-header">
+            <h3>个性特征</h3>
+          </div>
+          <div class="card-content">
+            <div class="detail-text">
+              <label>性格特点</label>
+              <p :class="{ 'empty-value': !ocDetail.personality }">
+                {{ ocDetail.personality || '没有内容' }}
+              </p>
+            </div>
+            <div class="detail-text">
+              <label>特长</label>
+              <p :class="{ 'empty-value': !ocDetail.skill }">
+                {{ ocDetail.skill || '没有内容' }}
+              </p>
+            </div>
+            <div class="detail-text">
+              <label>爱好</label>
+              <p :class="{ 'empty-value': !ocDetail.hobby }">
+                {{ ocDetail.hobby || '没有内容' }}
+              </p>
+            </div>
+          </div>
         </div>
-        <div class="detail-text">
-          <label>特长</label>
-          <p :class="{ 'empty-value': !ocDetail.skill }">
-            {{ ocDetail.skill || '没有内容' }}
-          </p>
-        </div>
-        <div class="detail-text">
-          <label>爱好</label>
-          <p :class="{ 'empty-value': !ocDetail.hobby }">
-            {{ ocDetail.hobby || '没有内容' }}
-          </p>
-        </div>
-        
-        <div class="form-actions">
-          <el-button 
-            type="danger" 
-            @click="handleDelete"
-            :loading="isDeleting"
-          >
-            <el-icon><Delete /></el-icon>
-            删除角色
-          </el-button>
-          <el-button 
-            type="primary" 
-            @click="showEditDialog"
-            class="edit-button"
-          >
-            <el-icon><Edit /></el-icon>
-            修改角色信息
-          </el-button>
+
+        <!-- 操作按钮卡片 -->
+        <div class="detail-card">
+          <div class="card-content">
+            <div class="form-actions">
+              <el-button type="danger" plain class="delete-button" @click="handleDelete">
+                <el-icon><Delete /></el-icon>
+                删除角色
+              </el-button>
+              <el-button color="#8B5CF6" plain class="edit-button" @click="showEditDialog">
+                <el-icon><Edit /></el-icon>
+                修改角色信息
+              </el-button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    
+
+    <!-- 右侧服装部分保持不变 -->
     <div class="costume-section">
       <h3>Ta的服装</h3>
       <div class="costume-grid">
@@ -127,6 +142,38 @@
             <p>为角色添加新的服装搭配</p>
           </div>
         </div>
+        
+        <draggable 
+          v-model="clothesList"
+          class="draggable-container"
+          item-key="clothesId"
+          :animation="200"
+        >
+          <template #item="{ element }">
+            <div 
+              class="card clothes-card"
+              @click="handleClothesClick(element.clothesId)"
+            >
+              <div class="card-image">
+                <template v-if="element.imageUrl">
+                  <img 
+                    :src="element.imageUrl" 
+                    :alt="element.name"
+                    class="clothes-image"
+                  >
+                </template>
+                <div v-else class="no-image-placeholder">
+                  <i class="fas fa-paint-brush"></i>
+                  <p>点击以启动AI绘画</p>
+                </div>
+              </div>
+              <div class="card-content">
+                <h3 class="clothes-name">{{ element.name }}</h3>
+                <p class="clothes-describe">{{ element.describe }}</p>
+              </div>
+            </div>
+          </template>
+        </draggable>
       </div>
     </div>
 
@@ -171,6 +218,27 @@
         </div>
       </template>
     </el-dialog>
+
+    <el-dialog
+      v-model="newClothesDialogVisible"
+      title="添加新服装"
+      width="60%"
+      :close-on-click-modal="false"
+      destroy-on-close
+    >
+      <NewClothes
+        :oc-id="ocId"
+        @cancel="newClothesDialogVisible = false"
+        @save-success="handleClothesCreated"
+      />
+    </el-dialog>
+
+    <ClothesDetail
+      v-if="selectedClothesId"
+      v-model:visible="clothesDetailVisible"
+      :clothes-id="selectedClothesId"
+      :oc-id="ocId"
+    />
   </div>
 </template>
 
@@ -180,6 +248,10 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { getOcDetail, updateOcDetail, deleteOc, type OcDetail } from '@/api/oc'
 import EditOc from './EditOc.vue'
 import { Edit, Delete, Warning } from '@element-plus/icons-vue'
+import { getClothesBaseInfo, type ClothesBaseInfo } from '@/api/clothes'
+import draggable from 'vuedraggable'
+import NewClothes from './NewClothes.vue'
+import ClothesDetail from './ClothesDetail.vue'
 
 export default defineComponent({
   name: 'OcDetail',
@@ -188,7 +260,10 @@ export default defineComponent({
     EditOc,
     Edit,
     Delete,
-    Warning
+    Warning,
+    draggable,
+    NewClothes,
+    ClothesDetail
   },
   
   props: {
@@ -203,7 +278,11 @@ export default defineComponent({
       ocDetail: null as OcDetail | null,
       editDialogVisible: false,
       deleteDialogVisible: false,
-      isDeleting: false
+      isDeleting: false,
+      clothesList: [] as ClothesBaseInfo[],
+      newClothesDialogVisible: false,
+      clothesDetailVisible: false,
+      selectedClothesId: null as number | null
     }
   },
 
@@ -213,6 +292,7 @@ export default defineComponent({
       handler(newId: number) {
         if (newId) {
           this.fetchOcDetail(newId)
+          this.fetchClothesList()
         }
       }
     }
@@ -231,7 +311,7 @@ export default defineComponent({
     },
 
     showNewCostumeDialog() {
-      this.$emit('show-new-costume')
+      this.newClothesDialogVisible = true
     },
 
     showEditDialog() {
@@ -244,7 +324,7 @@ export default defineComponent({
         ElMessage.success('修改成功')
         this.fetchOcDetail(this.ocId)
       } catch (error) {
-        ElMessage.error('修改失败')
+        ElMessage.error('修��失败')
       }
     },
 
@@ -279,61 +359,103 @@ export default defineComponent({
       } finally {
         this.isDeleting = false
       }
+    },
+
+    async fetchClothesList() {
+      try {
+        const response = await getClothesBaseInfo(this.ocId)
+        if (response.data) {
+          this.clothesList = response.data
+        }
+      } catch (error) {
+        ElMessage.error('获取服装列表失败')
+      }
+    },
+
+    handleClothesClick(clothesId: number) {
+      this.selectedClothesId = clothesId
+      this.clothesDetailVisible = true
+    },
+
+    handleClothesCreated() {
+      this.newClothesDialogVisible = false
+      this.fetchClothesList() // 刷新服装列表
     }
   }
 })
 </script>
 
 <style scoped>
+/* 定义主题色变量 */
+:root {
+  --primary-color: #8B5CF6;
+  --primary-light: #DDD6FE;
+  --primary-lighter: #EDE9FE;
+  --primary-dark: #7C3AED;
+}
+
 .oc-detail-container {
   display: grid;
   grid-template-columns: 60% 40%;
-  gap: 20px;
+  gap: 10px;
   height: calc(80vh - 120px);
   padding: 20px;
+  background-color: #F9FAFB;
+}
+
+.left-section {
+  height: 100%;
+  padding-right: 20px;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
 .oc-detail {
-  padding-right: 20px;
-  border-right: 1px solid rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
   height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-right: 10px;
 }
 
-.detail-section {
-  margin-bottom: 30px;
-}
-
-.detail-section h3 {
-  color: #2d3748;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid rgba(66, 153, 225, 0.3);
+.detail-card {
+  flex-shrink: 0;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(139, 92, 246, 0.1);
+  overflow: hidden;
   transition: all 0.3s ease;
+  border: 1px solid rgba(139, 92, 246, 0.1);
 }
 
-.detail-section:hover h3 {
-  color: #2b6cb0;
-  border-bottom-color: #4299e1;
+.detail-card:hover {
+  box-shadow: 0 8px 12px rgba(139, 92, 246, 0.15);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  background: var(--primary-lighter);
+  padding: 16px 24px;
+  border-bottom: 2px solid var(--primary-light);
+}
+
+.card-header h3 {
+  color: var(--primary-dark);
+  margin: 0;
+  font-size: 1.2em;
+  font-weight: 600;
+}
+
+.card-content {
+  padding: 24px;
 }
 
 .detail-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.basic-info-grid {
-  grid-template-areas: 
-    "gender age"
-    "height weight";
-}
-
-.appearance-grid {
-  grid-template-areas:
-    "skin hair"
-    "hairColor eyesColor";
+  gap: 24px;
+  margin-bottom: 24px;
 }
 
 .detail-item {
@@ -342,14 +464,10 @@ export default defineComponent({
   gap: 8px;
 }
 
-.detail-text {
-  margin-bottom: 20px;
-}
-
 .detail-item label,
 .detail-text label {
   font-weight: 500;
-  color: #4a5568;
+  color: var(--primary-dark);
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -359,32 +477,85 @@ export default defineComponent({
 .detail-text p {
   font-size: 1.1em;
   line-height: 1.8;
-  text-decoration: underline;
-  font-family: 'Noto Sans SC', sans-serif !important;
+  color: #4B5563;
+  padding: 8px 12px;
+  background: var(--primary-lighter);
+  border-radius: 8px;
   transition: all 0.3s ease;
-  white-space: pre-wrap;
-  word-break: break-word;
 }
 
-/* 空值样式 */
 .empty-value {
-  color: #a0aec0 !important;
-  text-decoration: none !important;
+  color: #9CA3AF !important;
+  background: transparent !important;
   font-style: italic;
-  font-family: 'Noto Sans SC', sans-serif !important;
+  font-weight: 300;
 }
 
+.detail-item span:not(.empty-value):hover,
+.detail-text p:not(.empty-value):hover {
+  background: var(--primary-light);
+  transform: translateY(-1px);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 20px;
+}
+
+/* 按钮样式 */
+.delete-button,
+.edit-button {
+  padding: 12px 24px;
+  font-size: 1.05rem;
+  height: auto;
+}
+
+.delete-button .el-icon,
+.edit-button .el-icon {
+  font-size: 1.2em;
+  margin-right: 8px;
+}
+
+/* 统一的滚动条样式 */
+.oc-detail::-webkit-scrollbar,
+.costume-section::-webkit-scrollbar {
+  width: 6px;
+}
+
+.oc-detail::-webkit-scrollbar-track,
+.costume-section::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.oc-detail::-webkit-scrollbar-thumb,
+.costume-section::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.oc-detail::-webkit-scrollbar-thumb:hover,
+.costume-section::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 右侧服装区域样式优化 */
 .costume-section {
   padding-right: 20px;
   overflow-y: auto;
   height: 100%;
+  scrollbar-gutter: stable; /* 防止滚动条出现时布局抖动 */
 }
 
 .costume-section h3 {
-  color: #2c3e50;
+  color: var(--primary-dark);
   margin-bottom: 20px;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 2px solid var(--primary-light);
+  font-size: 1.2em;
+  font-weight: 600;
 }
 
 .costume-grid {
@@ -457,61 +628,6 @@ export default defineComponent({
   .create-card .create-image {
     height: 180px;
   }
-}
-
-/* 滚动条样式 */
-.oc-detail::-webkit-scrollbar,
-.costume-section::-webkit-scrollbar {
-  width: 6px;
-}
-
-.oc-detail::-webkit-scrollbar-track,
-.costume-section::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.oc-detail::-webkit-scrollbar-thumb,
-.costume-section::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
-}
-
-.oc-detail::-webkit-scrollbar-thumb:hover,
-.costume-section::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-.form-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  padding: 20px 0 0 0;
-  margin-top: 20px;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-:deep(.el-button) {
-  padding: 12px 24px;
-  font-size: 16px;
-  height: auto;
-  line-height: 1.5;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-:deep(.el-button .el-icon) {
-  font-size: 18px;
-}
-
-:deep(.el-button:hover) {
-  transform: translateY(-1px);
-  transition: all 0.3s ease;
-}
-
-.detail-section:last-child {
-  margin-bottom: 0;
 }
 
 /* 删除确认对话框样式 */
@@ -593,5 +709,130 @@ export default defineComponent({
 :deep(.el-button.is-disabled) {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+.clothes-card {
+  cursor: pointer;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+}
+
+.clothes-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 图片区域样式 */
+.card-image {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.clothes-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 无图片时的占位样式 */
+.no-image-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+}
+
+.no-image-placeholder i {
+  font-size: 2em;
+  color: #666;
+}
+
+.no-image-placeholder p {
+  color: #666;
+  font-size: 1rem;
+  text-align: center;
+  margin: 0;
+}
+
+/* 卡片内容样式 */
+.card-content {
+  padding: 16px;
+  text-align: left;
+}
+
+.clothes-name {
+  font-size: 1.25rem;
+  color: #333;
+  margin-bottom: 8px;
+  font-weight: 600;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.clothes-describe {
+  color: #666;
+  font-size: 0.9rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  line-height: 1.5;
+  height: 2.7em;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .card-image {
+    height: 180px;
+  }
+  
+  .no-image-placeholder {
+    padding: 15px;
+  }
+  
+  .no-image-placeholder p {
+    font-size: 0.9rem;
+  }
+}
+
+/* 拖拽容器样式优化 */
+.draggable-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 30px;
+  grid-column: 1 / -1;
+  padding-right: 10px; /* 为滚动条预留空间 */
+}
+
+/* 拖拽时的样式 */
+.clothes-card.sortable-ghost {
+  opacity: 0.5;
+  background: #f0f0f0;
+}
+
+.clothes-card.sortable-drag {
+  cursor: move;
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  .draggable-container {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+  }
 }
 </style> 
