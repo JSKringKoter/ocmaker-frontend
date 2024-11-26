@@ -3,7 +3,9 @@ import request from './request'
 // 服装基础信息接口
 export interface ClothesBaseInfo {
   clothesId: number
+  clothesOcId: number
   name: string
+  imgUrl: string
   describe: string
 }
 
@@ -57,4 +59,9 @@ export const getClothesDetail = async (params: ClothesDetailParams) => {
 // 修改更新服装的 API 函数
 export const updateClothes = async (clothesData: ClothesDetailVO) => {
     return request.post('/clothes/update', clothesData)
+}
+
+// 删除服装的API函数
+export const deleteClothes = async (params: ClothesDetailParams) => {
+  return request.post('/clothes/delete', params)
 } 

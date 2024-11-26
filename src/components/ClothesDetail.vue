@@ -108,18 +108,12 @@
 
       <div class="ai-drawing-section">
         <div class="section-header">
-          <h3>服装插画</h3>
+          <h3>视觉化</h3>
         </div>
         
         <div class="section-content">
           <div v-if="clothesDetail.imgUrl" class="clothes-image">
             <img :src="clothesDetail.imgUrl" :alt="clothesDetail.name">
-            <div class="image-actions">
-              <el-button class="regenerate-button" @click="handleRegenerate">
-                <el-icon><Refresh /></el-icon>
-                重新生成
-              </el-button>
-            </div>
           </div>
           <div v-else class="no-image-placeholder" @click="handleStartDrawing">
             <i class="fas fa-paint-brush"></i>
@@ -140,15 +134,61 @@
       }"
       @submit-success="handleEditSuccess"
     />
+
+    <el-dialog
+      v-model="deleteDialogVisible"
+      title="确认删除"
+      width="400px"
+      class="delete-dialog"
+      :show-close="false"
+      :close-on-click-modal="false"
+    >
+      <div class="delete-content">
+        <div class="warning-icon-wrapper">
+          <el-icon class="warning-icon"><Warning /></el-icon>
+        </div>
+        <div class="delete-message">
+          <h3>删除服装</h3>
+          <p>确定要删除这件服装吗？</p>
+          <p class="warning-text">此操作不可恢复</p>
+        </div>
+      </div>
+      
+      <div class="dialog-footer">
+        <el-button
+          @click="deleteDialogVisible = false"
+          :disabled="isDeleting"
+        >
+          <el-icon><Close /></el-icon>
+          取消
+        </el-button>
+        <el-button
+          type="danger"
+          @click="confirmDelete"
+          :loading="isDeleting"
+        >
+          <el-icon><Delete /></el-icon>
+          确定删除
+        </el-button>
+      </div>
+    </el-dialog>
+
+    <AIDrawingDialog
+      v-model:visible="showDrawingDialog"
+      :clothes-id="clothesId"
+      :clothes-oc-id="ocId"
+      @success="handleDrawingSuccess"
+    />
   </el-dialog>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getClothesDetail, ClothesData } from '@/api/clothes'
-import { Edit, Delete, Refresh } from '@element-plus/icons-vue'
+import { getClothesDetail, deleteClothes, ClothesData } from '@/api/clothes'
+import { Edit, Delete, Warning, Close } from '@element-plus/icons-vue'
 import EditClothes from './EditClothes.vue'
+import AIDrawingDialog from './AIDrawingDialog.vue'
 
 export default defineComponent({
   name: 'ClothesDetail',
@@ -156,8 +196,10 @@ export default defineComponent({
   components: {
     Edit,
     Delete,
-    Refresh,
-    EditClothes
+    Warning,
+    Close,
+    EditClothes,
+    AIDrawingDialog
   },
 
   props: {
@@ -175,13 +217,16 @@ export default defineComponent({
     }
   },
 
-  emits: ['update:visible'],
+  emits: ['update:visible', 'delete-success'],
 
   data() {
     return {
       clothesDetail: null as ClothesData | null,
       isLoading: false,
-      showEditDialog: false
+      showEditDialog: false,
+      deleteDialogVisible: false,
+      isDeleting: false,
+      showDrawingDialog: false
     }
   },
 
@@ -230,24 +275,56 @@ export default defineComponent({
     },
 
     handleDelete() {
-      // 实现删除功能
+      this.deleteDialogVisible = true
     },
 
     handleStartDrawing() {
       if (!this.clothesDetail) return
-      // 这里添加启动AI绘画的逻辑
-      console.log('启动AI绘画')
-    },
-
-    handleRegenerate() {
-      if (!this.clothesDetail) return
-      // 这里添加重新生成图片的逻辑
-      ElMessage.info('重新生成图片功能开发中...')
+      this.showDrawingDialog = true
     },
 
     handleEditSuccess() {
       this.fetchClothesDetail()
       ElMessage.success('服装信息已更新')
+    },
+
+    async confirmDelete() {
+      if (!this.clothesDetail) return
+      
+      try {
+        this.isDeleting = true
+        await deleteClothes({
+          clothesId: this.clothesId,
+          clothesOcId: this.ocId
+        })
+        
+        // 1. 关闭删除确认对话框和详情对话框
+        this.deleteDialogVisible = false
+        this.dialogVisible = false
+        
+        // 2. 显示成功消息
+        ElMessage({
+          type: 'success',
+          message: '服装已删除',
+          duration: 2000
+        })
+        
+        // 3. 触发刷新列表事件
+        this.$emit('delete-success')
+        
+      } catch (error: any) {
+        ElMessage.error(
+          error.response?.data?.message || 
+          '删除失败，请稍后重试'
+        )
+      } finally {
+        this.isDeleting = false
+      }
+    },
+
+    handleDrawingSuccess() {
+      // 重新获取服装详情，刷新图片
+      this.fetchClothesDetail()
     }
   }
 })
@@ -276,6 +353,8 @@ export default defineComponent({
   padding-right: 20px;
   border-right: 1px solid rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .clothes-detail {
@@ -285,6 +364,7 @@ export default defineComponent({
   flex-direction: column;
   gap: 20px;
   padding-right: 10px;
+  padding-bottom: 20px;
 }
 
 .detail-card {
@@ -295,6 +375,7 @@ export default defineComponent({
   overflow: hidden;
   transition: all 0.3s ease;
   border: 1px solid rgba(139, 92, 246, 0.1);
+  margin-bottom: 0;
 }
 
 .detail-card:hover {
@@ -396,6 +477,7 @@ export default defineComponent({
   background: white;
   border-radius: 12px;
   height: 100%;
+  width: 95%;
   display: flex;
   flex-direction: column;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -422,7 +504,7 @@ export default defineComponent({
 
 .clothes-image,
 .no-image-placeholder {
-  width: 100%;
+  width: 85%;
   max-width: 520px;
   aspect-ratio: 832 / 1216;
   position: relative;
@@ -523,30 +605,6 @@ export default defineComponent({
   }
 }
 
-/* 重新生成按钮样式 */
-.image-actions {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 10px;
-  border-radius: 10px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.regenerate-button {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-  color: white;
-}
-
-.regenerate-button:hover {
-  background-color: var(--primary-dark);
-  border-color: var(--primary-dark);
-  transform: translateY(-1px);
-}
-
 /* 移除右侧滚动条相关样式 */
 .clothes-detail::-webkit-scrollbar {
   width: 6px;
@@ -580,6 +638,98 @@ export default defineComponent({
 .regenerate-button .el-icon {
   font-size: 1.2em;
   margin-right: 8px;
+}
+
+/* 删除对话框样式 */
+.delete-dialog :deep(.el-dialog) {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.delete-dialog :deep(.el-dialog__header) {
+  margin: 0;
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.delete-dialog :deep(.el-dialog__body) {
+  padding: 0 !important;
+}
+
+.delete-dialog :deep(.el-dialog__title) {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.delete-content {
+  padding: 32px 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.warning-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  background: #FEF2F2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.warning-icon {
+  font-size: 24px;
+  color: #DC2626;
+}
+
+.delete-message {
+  flex: 1;
+}
+
+.delete-message h3 {
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.delete-message p {
+  color: #4B5563;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.delete-message .warning-text {
+  color: #DC2626;
+  font-size: 0.875rem;
+  margin-top: 8px;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .delete-content {
+    flex-direction: column;
+    text-align: center;
+    padding: 24px 20px;
+  }
+  
+  .delete-message {
+    text-align: center;
+  }
+  
+  .dialog-footer {
+    padding: 12px 16px;
+  }
 }
 
 </style> 

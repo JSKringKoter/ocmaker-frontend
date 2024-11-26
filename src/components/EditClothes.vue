@@ -32,7 +32,7 @@
           </div>
   
           <div class="form-section">
-            <h2>服装��节</h2>
+            <h2>服装细节</h2>
             <div class="form-row">
               <div class="form-group half">
                 <label>帽饰</label>

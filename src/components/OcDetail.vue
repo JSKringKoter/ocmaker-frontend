@@ -184,40 +184,42 @@
     />
 
     <el-dialog
-      v-model="deleteDialogVisible"
-      title="确认删除"
-      width="400px"
-      class="delete-dialog"
-      :show-close="false"
-      :close-on-click-modal="false"
-    >
-      <div class="delete-content">
+    v-model="deleteDialogVisible"
+    title="确认删除"
+    width="400px"
+    class="delete-dialog"
+    :show-close="false"
+    :close-on-click-modal="false"
+  >
+    <div class="delete-content">
+      <div class="warning-icon-wrapper">
         <el-icon class="warning-icon"><Warning /></el-icon>
-        <div class="delete-message">
-          <h3>删除角色</h3>
-          <p>确定要删除这个角色以及Ta的所有服装吗？</p>
-          <p class="warning-text">此操作不可恢复</p>
-        </div>
       </div>
-      
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button
-            @click="deleteDialogVisible = false"
-            :disabled="isDeleting"
-          >
-            取消
-          </el-button>
-          <el-button
-            type="danger"
-            @click="confirmDelete"
-            :loading="isDeleting"
-          >
-            确定删除
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
+      <div class="delete-message">
+        <h3>删除角色</h3>
+        <p>确定要删除这个角色以及Ta的所有服装吗？</p>
+        <p class="warning-text">此操作不可恢复</p>
+      </div>
+    </div>
+    
+    <div class="dialog-footer">
+      <el-button
+        @click="deleteDialogVisible = false"
+        :disabled="isDeleting"
+      >
+        <el-icon><Close /></el-icon>
+        取消
+      </el-button>
+      <el-button
+        type="danger"
+        @click="confirmDelete"
+        :loading="isDeleting"
+      >
+        <el-icon><Delete /></el-icon>
+        确定删除
+      </el-button>
+    </div>
+  </el-dialog>
 
     <el-dialog
       v-model="newClothesDialogVisible"
@@ -238,6 +240,7 @@
       v-model:visible="clothesDetailVisible"
       :clothes-id="selectedClothesId"
       :oc-id="ocId"
+      @delete-success="handleClothesDeleted"
     />
   </div>
 </template>
@@ -247,7 +250,7 @@ import { defineComponent } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getOcDetail, updateOcDetail, deleteOc, type OcDetail } from '@/api/oc'
 import EditOc from './EditOc.vue'
-import { Edit, Delete, Warning } from '@element-plus/icons-vue'
+import { Edit, Delete, Warning, Close } from '@element-plus/icons-vue'
 import { getClothesBaseInfo, type ClothesBaseInfo } from '@/api/clothes'
 import draggable from 'vuedraggable'
 import NewClothes from './NewClothes.vue'
@@ -261,6 +264,7 @@ export default defineComponent({
     Edit,
     Delete,
     Warning,
+    Close,
     draggable,
     NewClothes,
     ClothesDetail
@@ -324,7 +328,7 @@ export default defineComponent({
         ElMessage.success('修改成功')
         this.fetchOcDetail(this.ocId)
       } catch (error) {
-        ElMessage.error('修��失败')
+        ElMessage.error('修改失败')
       }
     },
 
@@ -380,6 +384,11 @@ export default defineComponent({
     handleClothesCreated() {
       this.newClothesDialogVisible = false
       this.fetchClothesList() // 刷新服装列表
+    },
+
+    handleClothesDeleted() {
+      // 刷新服装列表
+      this.fetchClothesList()
     }
   }
 })
@@ -630,85 +639,115 @@ export default defineComponent({
   }
 }
 
-/* 删除确认对话框样式 */
-:deep(.delete-dialog .el-dialog__header) {
-  padding: 20px 20px 10px;
-  margin: 0;
-  text-align: center;
-  border-bottom: 1px solid #eee;
+/* 删除对话框样式 */
+:deep(.delete-dialog .el-dialog) {
+  border-radius: 16px;
+  overflow: hidden;
 }
 
-:deep(.delete-dialog .el-dialog__title) {
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
+:deep(.delete-dialog .el-dialog__header) {
+  margin: 0;
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 :deep(.delete-dialog .el-dialog__body) {
-  padding: 30px 20px;
+  padding: 0 !important;
+}
+
+:deep(.delete-dialog .el-dialog__title) {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
 }
 
 .delete-content {
+  padding: 32px 24px;
   display: flex;
-  align-items: flex-start;
-  gap: 20px;
-  padding: 0 10px;
+  align-items: center;
+  gap: 24px;
+}
+
+.warning-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  background: #FEF2F2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .warning-icon {
   font-size: 24px;
-  color: #f56c6c;
-  margin-top: 4px;
+  color: #DC2626;
+}
+
+.delete-message {
+  flex: 1;
 }
 
 .delete-message h3 {
-  font-size: 16px;
-  margin-bottom: 8px;
-  color: #333;
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
 }
 
 .delete-message p {
-  color: #666;
-  line-height: 1.6;
+  color: #4B5563;
   margin: 0;
+  line-height: 1.5;
 }
 
-.warning-text {
-  color: #f56c6c !important;
-  font-size: 0.9em;
-  margin-top: 8px !important;
+.delete-message .warning-text {
+  color: #DC2626;
+  font-size: 0.875rem;
+  margin-top: 8px;
+}
+
+/* 操作按钮卡片样式 */
+.action-card {
+  background: white;
+  border-top: 1px solid #e5e7eb;
 }
 
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  padding-top: 10px;
-  border-top: 1px solid #eee;
+  gap: 16px;
+  padding: 16px 24px;
 }
 
-:deep(.delete-dialog .el-dialog__footer) {
-  padding: 10px 20px 20px;
-  margin: 0;
+:deep(.el-button) {
+  padding: 12px 24px;
+  font-size: 1.05rem;
+  height: auto;
+  line-height: 1.5;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
-:deep(.delete-dialog .el-button) {
-  padding: 9px 20px;
-  font-size: 14px;
-  border-radius: 4px;
+:deep(.el-button .el-icon) {
+  font-size: 1.2em;
 }
 
-/* 添加对话框动画 */
-:deep(.delete-dialog .el-dialog) {
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* 禁用状态下的取消按钮样式 */
-:deep(.el-button.is-disabled) {
-  opacity: 0.7;
-  cursor: not-allowed;
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .delete-content {
+    flex-direction: column;
+    text-align: center;
+    padding: 24px 20px;
+  }
+  
+  .delete-message {
+    text-align: center;
+  }
+  
+  .dialog-footer {
+    padding: 12px 16px;
+  }
 }
 
 .clothes-card {
