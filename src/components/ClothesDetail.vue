@@ -112,7 +112,7 @@
         </div>
         
         <div class="section-content">
-          <div v-if="clothesDetail.imgUrl" class="clothes-image">
+          <div v-if="clothesDetail.imgUrl" class="clothes-image" @click="handlePreviewImage">
             <img :src="clothesDetail.imgUrl" :alt="clothesDetail.name">
           </div>
           <div v-else class="no-image-placeholder" @click="handleStartDrawing">
@@ -179,6 +179,17 @@
       :clothes-oc-id="ocId"
       @success="handleDrawingSuccess"
     />
+
+    <ImagePreview
+      v-if="clothesDetail?.imgUrl"
+      v-model:visible="showImagePreview"
+      :image-url="clothesDetail.imgUrl"
+      :image-alt="clothesDetail.name"
+      :oc-name="ocName"
+      :clothes-name="clothesDetail.name"
+      :description="clothesDetail.describe"
+      @redraw="handleStartDrawing"
+    />
   </el-dialog>
 </template>
 
@@ -189,6 +200,7 @@ import { getClothesDetail, deleteClothes, ClothesData } from '@/api/clothes'
 import { Edit, Delete, Warning, Close } from '@element-plus/icons-vue'
 import EditClothes from './EditClothes.vue'
 import AIDrawingDialog from './AIDrawingDialog.vue'
+import ImagePreview from './ImagePreview.vue'
 
 export default defineComponent({
   name: 'ClothesDetail',
@@ -199,7 +211,8 @@ export default defineComponent({
     Warning,
     Close,
     EditClothes,
-    AIDrawingDialog
+    AIDrawingDialog,
+    ImagePreview
   },
 
   props: {
@@ -214,6 +227,10 @@ export default defineComponent({
     ocId: {
       type: Number,
       required: true
+    },
+    ocName: {
+      type: String,
+      required: true
     }
   },
 
@@ -226,7 +243,8 @@ export default defineComponent({
       showEditDialog: false,
       deleteDialogVisible: false,
       isDeleting: false,
-      showDrawingDialog: false
+      showDrawingDialog: false,
+      showImagePreview: false
     }
   },
 
@@ -325,6 +343,12 @@ export default defineComponent({
     handleDrawingSuccess() {
       // 重新获取服装详情，刷新图片
       this.fetchClothesDetail()
+    },
+
+    handlePreviewImage() {
+      if (this.clothesDetail?.imgUrl) {
+        this.showImagePreview = true
+      }
     }
   }
 })
