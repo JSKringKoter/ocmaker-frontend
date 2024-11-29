@@ -56,7 +56,7 @@
         title="创建新角色"
         custom-class="oc-dialog compact-dialog"
         :before-close="handleClose"
-        width="60%"
+        width="65%"
       >
         <NewOc @save-success="handleSaveSuccess" @cancel="handleClose" />
       </el-dialog>
