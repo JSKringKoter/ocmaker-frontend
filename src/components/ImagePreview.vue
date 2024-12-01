@@ -2,53 +2,142 @@
   <el-dialog
     v-model="dialogVisible"
     width="65%"
-    :show-close="false"
-    :close-on-click-modal="true"
+    :close-on-click-modal="false"
     class="image-preview-dialog"
     destroy-on-close
   >
     <div class="preview-wrapper">
       <!-- 左侧图片区域 -->
       <div class="preview-container">
-        <img :src="imageUrl" :alt="imageAlt">
-        <el-button
-          v-if="showRedrawButton"
-          class="redraw-button"
-          type="primary"
-          circle
-          @click="handleRedraw"
-        >
-          <el-icon><Brush /></el-icon>
-        </el-button>
+        <div class="image-wrapper">
+          <img :src="imageUrl" :alt="imageAlt">
+          <div class="action-buttons">
+            <el-tooltip
+              content="重新生成"
+              placement="top"
+              :show-after="300"
+            >
+              <el-button
+                v-if="showRedrawButton"
+                class="action-button redraw-button"
+                type="primary"
+                circle
+                @click="handleRedraw"
+              >
+                <el-icon><Refresh /></el-icon>
+              </el-button>
+            </el-tooltip>
+
+            <el-tooltip
+              content="下载图片"
+              placement="top"
+              :show-after="300"
+            >
+              <el-button
+                class="action-button download-button"
+                type="success"
+                circle
+                @click="handleDownload"
+              >
+                <el-icon><Download /></el-icon>
+              </el-button>
+            </el-tooltip>
+
+            <el-tooltip
+              content="删除图片"
+              placement="top"
+              :show-after="300"
+            >
+              <el-button
+                class="action-button delete-button"
+                type="danger"
+                circle
+                @click="handleDelete"
+              >
+                <el-icon><Delete /></el-icon>
+              </el-button>
+            </el-tooltip>
+          </div>
+        </div>
       </div>
 
       <!-- 右侧信息区域 -->
       <div class="info-container">
         <div class="info-header">
-          <h2 class="oc-name">名称</h2>
-          <h3 class="clothes-name">{{ clothesName }}</h3>
+          <div class="header-content">
+            <h2 class="oc-name">{{ ocName }}</h2>
+            <h3 class="clothes-name">{{ clothesName }}</h3>
+          </div>
         </div>
         
         <div class="info-content">
           <div class="description-section">
             <h4>服装介绍</h4>
-            <p class="description-text">{{ description }}</p>
+            <div class="description-card">
+              <p class="description-text">{{ description || '暂无介绍' }}</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- 删除确认对话框 -->
+    <el-dialog
+      v-model="deleteDialogVisible"
+      title="确认删除"
+      width="400px"
+      class="delete-dialog"
+      :show-close="false"
+      :close-on-click-modal="false"
+      append-to-body
+    >
+      <div class="delete-content">
+        <div class="warning-icon-wrapper">
+          <el-icon class="warning-icon"><Warning /></el-icon>
+        </div>
+        <div class="delete-message">
+          <h3>删除图片</h3>
+          <p>确定要删除这张图片吗？</p>
+          <p class="warning-text">此操作不可恢复</p>
+        </div>
+      </div>
+      
+      <div class="dialog-footer">
+        <el-button
+          @click="deleteDialogVisible = false"
+          :disabled="isDeleting"
+        >
+          <el-icon><Close /></el-icon>
+          取消
+        </el-button>
+        <el-button
+          type="danger"
+          @click="confirmDelete"
+          :loading="isDeleting"
+        >
+          <el-icon><Delete /></el-icon>
+          确定删除
+        </el-button>
+      </div>
+    </el-dialog>
   </el-dialog>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
-import { Brush } from '@element-plus/icons-vue'
+import { defineComponent, PropType, ref, computed } from 'vue'
+import { ElMessage } from 'element-plus'
+import { Refresh, Download, Delete, Warning, Close } from '@element-plus/icons-vue'
+import { deleteClothes } from '@/api/ai'
 
 export default defineComponent({
   name: 'ImagePreview',
 
   components: {
-    Brush
+    Refresh,
+    Download,
+    Delete,
+    Warning,
+    Close
   },
 
   props: {
@@ -69,7 +158,6 @@ export default defineComponent({
       type: Boolean,
       default: true
     },
-    // 新增属性
     ocName: {
       type: String,
       required: true
@@ -81,25 +169,66 @@ export default defineComponent({
     description: {
       type: String,
       default: '暂无介绍'
+    },
+    clothesId: {
+      type: Number,
+      required: true
     }
   },
 
-  emits: ['update:visible', 'redraw'],
+  emits: ['update:visible', 'redraw', 'delete'],
 
-  computed: {
-    dialogVisible: {
-      get(): boolean {
-        return this.visible
-      },
-      set(value: boolean) {
-        this.$emit('update:visible', value)
+  setup(props, { emit }) {
+    const deleteDialogVisible = ref(false)
+    const isDeleting = ref(false)
+
+    const dialogVisible = computed({
+      get: () => props.visible,
+      set: (value: boolean) => emit('update:visible', value)
+    })
+
+    const handleRedraw = () => {
+      emit('redraw')
+    }
+
+    const handleDownload = () => {
+      const link = document.createElement('a')
+      link.href = props.imageUrl
+      link.download = `${props.ocName}-${props.clothesName}.png`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      ElMessage.success('正在下载')
+    }
+
+    const handleDelete = () => {
+      deleteDialogVisible.value = true
+    }
+
+    const confirmDelete = async () => {
+      try {
+        isDeleting.value = true
+        await deleteClothes({ clothesId: props.clothesId })
+        emit('delete')
+        deleteDialogVisible.value = false
+        dialogVisible.value = false
+        ElMessage.success('图片删除成功')
+      } catch (error) {
+        console.error('删除失败:', error)
+        ElMessage.error('删除失败，请重试')
+      } finally {
+        isDeleting.value = false
       }
     }
-  },
 
-  methods: {
-    handleRedraw() {
-      this.$emit('redraw')
+    return {
+      dialogVisible,
+      deleteDialogVisible,
+      isDeleting,
+      handleRedraw,
+      handleDownload,
+      handleDelete,
+      confirmDelete
     }
   }
 })
@@ -107,10 +236,18 @@ export default defineComponent({
 
 <style scoped>
 .image-preview-dialog :deep(.el-dialog) {
-  background: rgba(0, 0, 0, 0.8);
-  border-radius: 16px;
+  background: white;
+  border-radius: 20px;
   overflow: hidden;
-  max-width: 1400px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  transform: translateY(20px);
+  animation: dialogSlideIn 0.3s ease-out forwards;
+}
+
+@keyframes dialogSlideIn {
+  to {
+    transform: translateY(0);
+  }
 }
 
 .image-preview-dialog :deep(.el-dialog__body) {
@@ -123,57 +260,63 @@ export default defineComponent({
 
 .preview-wrapper {
   display: grid;
-  grid-template-columns: 65% 35%;
-  min-height: 70vh;
+  grid-template-columns: 60% 40%;
+  
 }
 
 .preview-container {
   position: relative;
   width: 100%;
-  height: 70vh;
+  height: 72vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 40px;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  background: #f8fafc;
 }
 
-.preview-container img {
+.image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-wrapper img {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
   border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .info-container {
   padding: 40px;
-  color: white;
   display: flex;
   flex-direction: column;
   gap: 30px;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 255, 255, 0.05)
-  );
+  background: white;
 }
 
 .info-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   padding-bottom: 20px;
 }
 
 .oc-name {
   font-size: 2em;
-  margin: 0 0 10px 0;
-  color: var(--primary-color, #8B5CF6);
+  margin: 0 0 12px 0;
+  color: #1a365d;
   font-weight: 600;
 }
 
 .clothes-name {
   font-size: 1.5em;
   margin: 0;
-  color: rgba(255, 255, 255, 0.9);
+  color: #4a5568;
   font-weight: 500;
 }
 
@@ -183,45 +326,127 @@ export default defineComponent({
 
 .description-section h4 {
   font-size: 1.1em;
-  color: rgba(255, 255, 255, 0.7);
+  color: #4a5568;
   margin: 0 0 16px 0;
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+}
+
+.description-card {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 20px;
 }
 
 .description-text {
   font-size: 1.1em;
   line-height: 1.8;
-  color: rgba(255, 255, 255, 0.8);
+  color: #4a5568;
   margin: 0;
   white-space: pre-line;
 }
 
-.redraw-button {
+.action-buttons {
   position: absolute;
-  right: 40px;
-  bottom: 40px;
-  width: 56px;
-  height: 56px;
-  background: var(--primary-color, #8B5CF6);
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  gap: 12px;
+}
+
+.action-button {
+  width: 56px !important;
+  height: 56px !important;
+  transition: all 0.3s ease;
+}
+
+.action-button :deep(.el-icon) {
+  font-size: 24px;
+}
+
+.redraw-button {
+  background: #8B5CF6;
   border: none;
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
-  transition: all 0.3s ease;
 }
 
 .redraw-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
-  background: var(--primary-dark, #7C3AED);
+  background: #7C3AED;
 }
 
-.redraw-button :deep(.el-icon) {
-  font-size: 24px;
+.download-button {
+  background: #10B981;
+  border: none;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.download-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+  background: #059669;
+}
+
+.delete-button {
+  background: #EF4444;
+  border: none;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.delete-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+  background: #DC2626;
+}
+
+/* 删除对话框样式 */
+.delete-dialog {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.delete-content {
+  text-align: center;
+  padding: 20px;
+}
+
+.warning-icon-wrapper {
+  margin-bottom: 20px;
+}
+
+.warning-icon {
+  font-size: 48px;
+  color: #EF4444;
+}
+
+.delete-message h3 {
+  font-size: 1.5em;
+  margin: 0 0 12px 0;
+  color: #1F2937;
+}
+
+.delete-message p {
+  margin: 0;
+  color: #4B5563;
+}
+
+.warning-text {
+  color: #EF4444 !important;
+  font-size: 0.875em;
+  margin-top: 8px !important;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px;
+  background: #F9FAFB;
+  border-top: 1px solid #E5E7EB;
 }
 
 /* 响应式调整 */
-@media screen and (max-width: 1200px) {
+@media screen and (max-width: 1400px) {
   .preview-wrapper {
     grid-template-columns: 60% 40%;
   }
@@ -237,19 +462,31 @@ export default defineComponent({
   .clothes-name {
     font-size: 1.3em;
   }
+
+  .preview-container {
+    padding: 30px;
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  .image-preview-dialog :deep(.el-dialog) {
+    width: 90% !important;
+    margin: 5vh auto !important;
+  }
 }
 
 @media screen and (max-width: 768px) {
   .preview-wrapper {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto;
+    min-height: auto;
   }
 
   .preview-container {
     height: 50vh;
-    padding: 10px;
+    padding: 20px;
     border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   }
 
   .info-container {
@@ -257,19 +494,8 @@ export default defineComponent({
     min-height: 30vh;
   }
 
-  .redraw-button {
-    right: 20px;
-    bottom: 20px;
-    width: 48px;
-    height: 48px;
-  }
-
-  .redraw-button :deep(.el-icon) {
-    font-size: 20px;
-  }
-  
   .oc-name {
-    font-size: 1.5em;
+    font-size: 1.6em;
   }
   
   .clothes-name {
@@ -279,5 +505,43 @@ export default defineComponent({
   .description-text {
     font-size: 1em;
   }
+
+  .description-card {
+    padding: 16px;
+  }
+
+  .action-button {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .action-button :deep(.el-icon) {
+    font-size: 20px;
+  }
+
+  .action-buttons {
+    right: 16px;
+    bottom: 16px;
+    gap: 8px;
+  }
+}
+
+/* 自定义滚动条样式 */
+.info-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.info-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.info-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.info-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 </style> 

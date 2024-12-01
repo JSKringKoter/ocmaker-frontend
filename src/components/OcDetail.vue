@@ -155,9 +155,9 @@
               @click="handleClothesClick(element.clothesId)"
             >
               <div class="card-image">
-                <template v-if="element.imageUrl">
+                <template v-if="element.abbImgUrl">
                   <img 
-                    :src="element.imageUrl" 
+                    :src="element.abbImgUrl" 
                     :alt="element.name"
                     class="clothes-image"
                   >
@@ -240,6 +240,7 @@
       v-model:visible="clothesDetailVisible"
       :clothes-id="selectedClothesId"
       :oc-id="ocId"
+      :oc-name="ocDetail?.name || ''"
       @delete-success="handleClothesDeleted"
     />
   </div>

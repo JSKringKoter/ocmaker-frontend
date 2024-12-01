@@ -188,7 +188,9 @@
       :oc-name="ocName"
       :clothes-name="clothesDetail.name"
       :description="clothesDetail.describe"
+      :clothes-id="clothesId"
       @redraw="handleStartDrawing"
+      @delete="handleImageDelete"
     />
   </el-dialog>
 </template>
@@ -349,6 +351,11 @@ export default defineComponent({
       if (this.clothesDetail?.imgUrl) {
         this.showImagePreview = true
       }
+    },
+
+    handleImageDelete() {
+      // 重新获取服装详情，刷新图片状态
+      this.fetchClothesDetail()
     }
   }
 })

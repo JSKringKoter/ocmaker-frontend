@@ -6,6 +6,7 @@ export interface ClothesBaseInfo {
   clothesOcId: number
   name: string
   imgUrl: string
+  abbImgUrl: string
   describe: string
 }
 
@@ -15,6 +16,7 @@ export interface ClothesData {
     name: string
     describe: string
     imgUrl?: string
+    abbImgUrl?: string
     hat?: string
     faceDecorate?: string
     uppers?: string
