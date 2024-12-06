@@ -23,9 +23,9 @@
           @click="showOcDetail(oc.ocId)"
         >
           <div class="card-image">
-            <template v-if="oc.imageUrl">
+            <template v-if="oc.abbUrl">
               <img 
-                :src="oc.imageUrl" 
+                :src="oc.abbUrl" 
                 :alt="oc.name"
                 class="oc-image"
               >
@@ -621,7 +621,7 @@ export default defineComponent({
   }
 }
 
-/* 防止外部出现滚动�� */
+/* 防止外部出现滚动 */
 :deep(.el-overlay) {
   overflow: hidden !important;
 }

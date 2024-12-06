@@ -166,6 +166,28 @@
                   <i class="fas fa-paint-brush"></i>
                   <p>点击以启动AI绘画</p>
                 </div>
+                <div 
+                  class="collect-mark"
+                  @click.stop="handleCollectClick(element)"
+                >
+                  <el-tooltip
+                    :content="element.collect ? '取消收藏' : '收藏'"
+                    placement="bottom"
+                    effect="light"
+                  >
+                    <i :class="[
+                      element.collect ? 'fas fa-star' : 'far fa-star'
+                    ]"></i>
+                  </el-tooltip>
+                </div>
+                <div 
+                  v-if="ocDetail?.favouriteClothesId === element.clothesId"
+                  class="favourite-mark"
+                >
+                  <el-tooltip content="招牌服装" placement="bottom" effect="light">
+                    <i class="fas fa-flag"></i>
+                  </el-tooltip>
+                </div>
               </div>
               <div class="card-content">
                 <h3 class="clothes-name">{{ element.name }}</h3>
@@ -242,6 +264,7 @@
       :oc-id="ocId"
       :oc-name="ocDetail?.name || ''"
       @delete-success="handleClothesDeleted"
+      @set-favourite-success="handleSetFavouriteSuccess"
     />
   </div>
 </template>
@@ -252,7 +275,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { getOcDetail, updateOcDetail, deleteOc, type OcDetail } from '@/api/oc'
 import EditOc from './EditOc.vue'
 import { Edit, Delete, Warning, Close } from '@element-plus/icons-vue'
-import { getClothesBaseInfo, type ClothesBaseInfo } from '@/api/clothes'
+import { getClothesBaseInfo, collectClothes, type ClothesBaseInfo } from '@/api/clothes'
 import draggable from 'vuedraggable'
 import NewClothes from './NewClothes.vue'
 import ClothesDetail from './ClothesDetail.vue'
@@ -390,6 +413,30 @@ export default defineComponent({
     handleClothesDeleted() {
       // 刷新服装列表
       this.fetchClothesList()
+    },
+
+    handleSetFavouriteSuccess() {
+      // 刷新OC详情和服装列表
+      this.fetchOcDetail(this.ocId)
+      this.fetchClothesList()
+    },
+
+    async handleCollectClick(clothes: ClothesBaseInfo) {
+      try {
+        await collectClothes({
+          clothesId: clothes.clothesId,
+          clothesOcId: clothes.clothesOcId,
+          collect: !clothes.collect
+        })
+        
+        // 更新本地状态
+        clothes.collect = !clothes.collect
+        
+        // 显示提示消息
+        ElMessage.success(clothes.collect ? '已收藏服装' : '已取消收藏')
+      } catch (error) {
+        ElMessage.error('操作失败，请重试')
+      }
     }
   }
 })
@@ -768,6 +815,7 @@ export default defineComponent({
 
 /* 图片区域样式 */
 .card-image {
+  position: relative;
   width: 100%;
   height: 200px;
   overflow: hidden;
@@ -848,7 +896,7 @@ export default defineComponent({
   }
 }
 
-/* 拖拽容器样式优化 */
+/* 拖拽容器式优化 */
 .draggable-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -874,5 +922,52 @@ export default defineComponent({
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 20px;
   }
+}
+
+/* 收藏和最爱标记的共同样式 */
+.collect-mark,
+.favourite-mark {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1;
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 收藏标记位置和特有样式 */
+.collect-mark {
+  top: 10px;
+  left: 10px;
+  cursor: pointer;
+}
+
+/* 最爱标记位置和特有样式 */
+.favourite-mark {
+  top: 10px;
+  right: 10px;
+}
+
+.favourite-mark i {
+  color: #409EFF;
+  font-size: 1.1em;
+}
+
+.collect-mark:hover {
+  transform: scale(1.1);
+}
+
+.collect-mark i {
+  color: #FFD700;
+  font-size: 1.1em;
+}
+
+.collect-mark i.far.fa-star {
+  color: #666;
 }
 </style> 

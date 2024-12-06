@@ -34,6 +34,7 @@ export interface OcDetail {
   personality: string
   skill: string
   hobby: string
+  favouriteClothesId: number | null
 }
 
 // OC基础信息接口
@@ -42,6 +43,8 @@ export interface OcBaseInfo {
   name: string
   gender: string
   age: number
+  favouriteClothesId: number | null
+  abbUrl: string | null
 }
 
 // 创建新OC的API函数

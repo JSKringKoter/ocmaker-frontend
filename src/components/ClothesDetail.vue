@@ -89,19 +89,24 @@
             </div>
           </div>
 
-          <div class="detail-card">
-            <div class="card-content">
-              <div class="form-actions">
-                <el-button type="danger" plain class="delete-button" @click="handleDelete">
-                  <el-icon><Delete /></el-icon>
-                  删除服装
-                </el-button>
-                <el-button color="#8B5CF6" plain class="edit-button" @click="handleEdit">
-                  <el-icon><Edit /></el-icon>
-                  修改服装
-                </el-button>
+          <div class="action-buttons">
+            <el-tooltip content="删除服装" placement="top" effect="light">
+              <div class="action-button delete" @click="handleDelete">
+                <el-icon><Delete /></el-icon>
               </div>
-            </div>
+            </el-tooltip>
+            
+            <el-tooltip content="修改服装" placement="top" effect="light">
+              <div class="action-button edit" @click="handleEdit">
+                <el-icon><Edit /></el-icon>
+              </div>
+            </el-tooltip>
+            
+            <el-tooltip content="设为招牌服装" placement="top" effect="light">
+              <div class="action-button favourite" @click="handleSetAsFavourite">
+                <el-icon><Flag /></el-icon>
+              </div>
+            </el-tooltip>
           </div>
         </div>
       </div>
@@ -198,9 +203,9 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getClothesDetail, deleteClothes, ClothesData } from '@/api/clothes'
-import { Edit, Delete, Warning, Close } from '@element-plus/icons-vue'
+import { getClothesDetail, deleteClothes, setAsFavourite, type ClothesData } from '@/api/clothes'
 import EditClothes from './EditClothes.vue'
+import { Edit, Delete, Flag, Warning, Close } from '@element-plus/icons-vue'
 import AIDrawingDialog from './AIDrawingDialog.vue'
 import ImagePreview from './ImagePreview.vue'
 
@@ -210,6 +215,7 @@ export default defineComponent({
   components: {
     Edit,
     Delete,
+    Flag,
     Warning,
     Close,
     EditClothes,
@@ -236,7 +242,7 @@ export default defineComponent({
     }
   },
 
-  emits: ['update:visible', 'delete-success'],
+  emits: ['update:visible', 'delete-success', 'set-favourite-success'],
 
   data() {
     return {
@@ -356,6 +362,20 @@ export default defineComponent({
     handleImageDelete() {
       // 重新获取服装详情，刷新图片状态
       this.fetchClothesDetail()
+    },
+
+    async handleSetAsFavourite() {
+      try {
+        await setAsFavourite({
+          ocId: this.ocId,
+          clothesId: this.clothesId
+        })
+        
+        ElMessage.success('已设置为招牌服装')
+        this.$emit('set-favourite-success')
+      } catch (error) {
+        ElMessage.error('设置失败，请重试')
+      }
     }
   }
 })
@@ -368,6 +388,9 @@ export default defineComponent({
   --primary-light: #DDD6FE;
   --primary-lighter: #EDE9FE;
   --primary-dark: #7C3AED;
+  --delete-color: #909399;
+  --edit-color: #8B5CF6;
+  --favourite-color: #409EFF;
 }
 
 .clothes-detail-container {
@@ -385,28 +408,27 @@ export default defineComponent({
   border-right: 1px solid rgba(0, 0, 0, 0.1);
   overflow: hidden;
   display: flex;
-  flex-direction: column;
+  position: relative;
 }
 
 .clothes-detail {
-  height: 100%;
+  flex: 1;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding-right: 10px;
-  padding-bottom: 20px;
+  padding-bottom: 80px; /* 为固定按钮留出空间 */
 }
 
 .detail-card {
-  flex-shrink: 0;
   background: white;
   border-radius: 16px;
   box-shadow: 0 4px 6px rgba(139, 92, 246, 0.1);
   overflow: hidden;
   transition: all 0.3s ease;
   border: 1px solid rgba(139, 92, 246, 0.1);
-  margin-bottom: 0;
+  margin-bottom: 24px;
+}
+
+.detail-card:last-child {
+  margin-bottom: 80px; /* 为固定按钮留出空间 */
 }
 
 .detail-card:hover {
@@ -658,7 +680,7 @@ export default defineComponent({
 /* 按钮样式 */
 .delete-button,
 .edit-button,
-.regenerate-button {
+.favourite-button {
   padding: 12px 24px;
   font-size: 1.05rem;
   height: auto;
@@ -666,7 +688,7 @@ export default defineComponent({
 
 .delete-button .el-icon,
 .edit-button .el-icon,
-.regenerate-button .el-icon {
+.favourite-button .el-icon {
   font-size: 1.2em;
   margin-right: 8px;
 }
@@ -761,6 +783,70 @@ export default defineComponent({
   .dialog-footer {
     padding: 12px 16px;
   }
+}
+
+/* 操作按钮样式 */
+.action-buttons {
+  position: absolute;
+  bottom: 20px;
+  right: 40px;
+  display: flex;
+  gap: 12px;
+  z-index: 10;
+  background: transparent;
+}
+
+.action-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid;
+}
+
+.action-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.action-button .el-icon {
+  font-size: 1.1em;
+}
+
+.action-button.delete {
+  border-color: var(--delete-color);
+  color: var(--delete-color);
+}
+
+.action-button.delete:hover {
+  background: var(--delete-color);
+  color: white;
+}
+
+.action-button.edit {
+  border-color: var(--edit-color);
+  color: var(--edit-color);
+}
+
+.action-button.edit:hover {
+  background: var(--edit-color);
+  color: white;
+}
+
+.action-button.favourite {
+  border-color: var(--favourite-color);
+  color: var(--favourite-color);
+}
+
+.action-button.favourite:hover {
+  background: var(--favourite-color);
+  color: white;
 }
 
 </style> 
