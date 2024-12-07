@@ -92,19 +92,43 @@
           <div class="action-buttons">
             <el-tooltip content="删除服装" placement="top" effect="light">
               <div class="action-button delete" @click="handleDelete">
-                <el-icon><Delete /></el-icon>
+                <i class="fas fa-trash-alt"></i>
               </div>
             </el-tooltip>
             
             <el-tooltip content="修改服装" placement="top" effect="light">
               <div class="action-button edit" @click="handleEdit">
-                <el-icon><Edit /></el-icon>
+                <i class="fas fa-edit"></i>
               </div>
             </el-tooltip>
             
-            <el-tooltip content="设为招牌服装" placement="top" effect="light">
-              <div class="action-button favourite" @click="handleSetAsFavourite">
-                <el-icon><Flag /></el-icon>
+            <el-tooltip 
+              :content="clothesDetail?.collect ? '取消收藏' : '收藏'" 
+              placement="top" 
+              effect="light"
+            >
+              <div 
+                class="action-button collect" 
+                :class="{ 'active': clothesDetail?.collect }"
+                @click="handleCollectClick"
+              >
+                <i :class="[
+                  clothesDetail?.collect ? 'fas fa-star' : 'far fa-star'
+                ]"></i>
+              </div>
+            </el-tooltip>
+            
+            <el-tooltip 
+              :content="ocDetail?.favouriteClothesId === clothesId ? '取消招牌服装' : '设为招牌服装'" 
+              placement="top" 
+              effect="light"
+            >
+              <div 
+                class="action-button favourite" 
+                :class="{ 'active': ocDetail?.favouriteClothesId === clothesId }"
+                @click="handleSetAsFavourite"
+              >
+                <i class="fas fa-flag"></i>
               </div>
             </el-tooltip>
           </div>
@@ -154,7 +178,7 @@
         </div>
         <div class="delete-message">
           <h3>删除服装</h3>
-          <p>确定要删除这件服装吗？</p>
+          <p>确��要删除这件服装吗？</p>
           <p class="warning-text">此操作不可恢复</p>
         </div>
       </div>
@@ -202,10 +226,10 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { ElMessage } from 'element-plus'
-import { getClothesDetail, deleteClothes, setAsFavourite, type ClothesData } from '@/api/clothes'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getClothesDetail, updateClothes, deleteClothes, setAsFavourite, collectClothes, type ClothesData } from '@/api/clothes'
 import EditClothes from './EditClothes.vue'
-import { Edit, Delete, Flag, Warning, Close } from '@element-plus/icons-vue'
+import { Edit, Delete, Warning, Close } from '@element-plus/icons-vue'
 import AIDrawingDialog from './AIDrawingDialog.vue'
 import ImagePreview from './ImagePreview.vue'
 
@@ -213,12 +237,9 @@ export default defineComponent({
   name: 'ClothesDetail',
 
   components: {
-    Edit,
-    Delete,
-    Flag,
+    EditClothes,
     Warning,
     Close,
-    EditClothes,
     AIDrawingDialog,
     ImagePreview
   },
@@ -238,6 +259,10 @@ export default defineComponent({
     },
     ocName: {
       type: String,
+      required: true
+    },
+    ocDetail: {
+      type: Object,
       required: true
     }
   },
@@ -366,15 +391,35 @@ export default defineComponent({
 
     async handleSetAsFavourite() {
       try {
+        const isFavourite = this.ocDetail?.favouriteClothesId === this.clothesId
         await setAsFavourite({
           ocId: this.ocId,
-          clothesId: this.clothesId
+          clothesId: isFavourite ? null : this.clothesId
         })
         
-        ElMessage.success('已设置为招牌服装')
+        ElMessage.success(isFavourite ? '已取消招牌服装' : '已设置为招牌服装')
         this.$emit('set-favourite-success')
       } catch (error) {
         ElMessage.error('设置失败，请重试')
+      }
+    },
+
+    async handleCollectClick() {
+      try {
+        await collectClothes({
+          clothesId: this.clothesId,
+          clothesOcId: this.ocId,
+          collect: !this.clothesDetail?.collect
+        })
+        
+        // 更新本地状态
+        if (this.clothesDetail) {
+          this.clothesDetail.collect = !this.clothesDetail.collect
+        }
+        
+        ElMessage.success(this.clothesDetail?.collect ? '已收藏服装' : '已取消收藏')
+      } catch (error) {
+        ElMessage.error('操作失败，请重试')
       }
     }
   }
@@ -486,11 +531,11 @@ export default defineComponent({
   transition: all 0.3s ease;
 }
 
-/* 修改空值样式 */
+/* 修改空样式 */
 .empty-value {
   color: #9CA3AF !important; /* 浅灰色文字 */
   background: transparent !important; /* 移除背景色 */
-  font-style: italic; /* 斜体 */
+  font-style: italic; /* ��体 */
   font-weight: 300; /* 更细的字重 */
 }
 
@@ -677,39 +722,82 @@ export default defineComponent({
   background: #a8a8a8;
 }
 
-/* 按钮样式 */
-.delete-button,
-.edit-button,
-.favourite-button {
-  padding: 12px 24px;
-  font-size: 1.05rem;
-  height: auto;
+/* 操作按钮样式 */
+.action-buttons {
+  position: absolute;
+  bottom: 20px;
+  right: 40px;
+  display: flex;
+  gap: 12px;
+  z-index: 1;
 }
 
-.delete-button .el-icon,
-.edit-button .el-icon,
-.favourite-button .el-icon {
-  font-size: 1.2em;
-  margin-right: 8px;
+/* 收藏和操作按钮的共同样式 */
+.action-button {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1;
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+}
+
+.action-button:hover {
+  transform: scale(1.1);
+}
+
+.action-button i {
+  font-size: 1.1em;
+}
+
+.action-button.delete i {
+  color: var(--delete-color);
+}
+
+.action-button.edit i {
+  color: var(--edit-color);
+}
+
+.action-button.favourite i {
+  color: #909399;
+}
+
+.action-button.favourite.active i {
+  color: #409EFF;
+}
+
+.action-button.collect i {
+  color: #666;
+}
+
+.action-button.collect.active i {
+  color: #FFD700;
 }
 
 /* 删除对话框样式 */
-.delete-dialog :deep(.el-dialog) {
+:deep(.delete-dialog .el-dialog) {
   border-radius: 16px;
   overflow: hidden;
 }
 
-.delete-dialog :deep(.el-dialog__header) {
+:deep(.delete-dialog .el-dialog__header) {
   margin: 0;
   padding: 20px;
   border-bottom: 1px solid #e5e7eb;
 }
 
-.delete-dialog :deep(.el-dialog__body) {
+:deep(.delete-dialog .el-dialog__body) {
   padding: 0 !important;
 }
 
-.delete-dialog :deep(.el-dialog__title) {
+:deep(.delete-dialog .el-dialog__title) {
   font-size: 1.25rem;
   font-weight: 600;
   color: #1f2937;
@@ -725,8 +813,8 @@ export default defineComponent({
 .warning-icon-wrapper {
   width: 48px;
   height: 48px;
-  background: #FEF2F2;
   border-radius: 50%;
+  background: #FEF2F2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -734,38 +822,33 @@ export default defineComponent({
 
 .warning-icon {
   font-size: 24px;
-  color: #DC2626;
-}
-
-.delete-message {
-  flex: 1;
+  color: #EF4444;
 }
 
 .delete-message h3 {
-  color: #1f2937;
   font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0 0 8px 0;
+  color: #1f2937;
+  margin-bottom: 8px;
 }
 
 .delete-message p {
   color: #4B5563;
   margin: 0;
-  line-height: 1.5;
 }
 
 .delete-message .warning-text {
-  color: #DC2626;
-  font-size: 0.875rem;
-  margin-top: 8px;
+  color: #EF4444;
+  font-size: 0.9rem;
+  margin-top: 4px;
 }
 
 .dialog-footer {
+  padding: 16px 24px;
+  background: #F9FAFB;
+  border-top: 1px solid #e5e7eb;
   display: flex;
   justify-content: flex-end;
-  gap: 16px;
-  padding: 16px 24px;
-  border-top: 1px solid #e5e7eb;
+  gap: 12px;
 }
 
 /* 响应式调整 */
@@ -783,70 +866,6 @@ export default defineComponent({
   .dialog-footer {
     padding: 12px 16px;
   }
-}
-
-/* 操作按钮样式 */
-.action-buttons {
-  position: absolute;
-  bottom: 20px;
-  right: 40px;
-  display: flex;
-  gap: 12px;
-  z-index: 10;
-  background: transparent;
-}
-
-.action-button {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid;
-}
-
-.action-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.action-button .el-icon {
-  font-size: 1.1em;
-}
-
-.action-button.delete {
-  border-color: var(--delete-color);
-  color: var(--delete-color);
-}
-
-.action-button.delete:hover {
-  background: var(--delete-color);
-  color: white;
-}
-
-.action-button.edit {
-  border-color: var(--edit-color);
-  color: var(--edit-color);
-}
-
-.action-button.edit:hover {
-  background: var(--edit-color);
-  color: white;
-}
-
-.action-button.favourite {
-  border-color: var(--favourite-color);
-  color: var(--favourite-color);
-}
-
-.action-button.favourite:hover {
-  background: var(--favourite-color);
-  color: white;
 }
 
 </style> 

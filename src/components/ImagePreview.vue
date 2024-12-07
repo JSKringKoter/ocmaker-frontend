@@ -15,47 +15,41 @@
             <el-tooltip
               content="重新生成"
               placement="top"
-              :show-after="300"
+              effect="light"
             >
-              <el-button
+              <div 
                 v-if="showRedrawButton"
-                class="action-button redraw-button"
-                type="primary"
-                circle
+                class="action-button edit"
                 @click="handleRedraw"
               >
-                <el-icon><Refresh /></el-icon>
-              </el-button>
+                <i class="fas fa-sync"></i>
+              </div>
             </el-tooltip>
 
             <el-tooltip
               content="下载图片"
               placement="top"
-              :show-after="300"
+              effect="light"
             >
-              <el-button
-                class="action-button download-button"
-                type="success"
-                circle
+              <div
+                class="action-button download"
                 @click="handleDownload"
               >
-                <el-icon><Download /></el-icon>
-              </el-button>
+                <i class="fas fa-download"></i>
+              </div>
             </el-tooltip>
 
             <el-tooltip
               content="删除图片"
               placement="top"
-              :show-after="300"
+              effect="light"
             >
-              <el-button
-                class="action-button delete-button"
-                type="danger"
-                circle
+              <div
+                class="action-button delete"
                 @click="handleDelete"
               >
-                <el-icon><Delete /></el-icon>
-              </el-button>
+                <i class="fas fa-trash-alt"></i>
+              </div>
             </el-tooltip>
           </div>
         </div>
@@ -126,15 +120,13 @@
 <script lang="ts">
 import { defineComponent, PropType, ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Refresh, Download, Delete, Warning, Close } from '@element-plus/icons-vue'
+import { Delete, Warning, Close } from '@element-plus/icons-vue'
 import { deleteClothes } from '@/api/ai'
 
 export default defineComponent({
   name: 'ImagePreview',
 
   components: {
-    Refresh,
-    Download,
     Delete,
     Warning,
     Close
@@ -235,6 +227,17 @@ export default defineComponent({
 </script>
 
 <style scoped>
+/* 定义主题色变量 */
+:root {
+  --primary-color: #8B5CF6;
+  --primary-light: #DDD6FE;
+  --primary-lighter: #EDE9FE;
+  --primary-dark: #7C3AED;
+  --delete-color: #909399;
+  --edit-color: #8B5CF6;
+  --download-color: #10B981;
+}
+
 .image-preview-dialog :deep(.el-dialog) {
   background: white;
   border-radius: 20px;
@@ -347,56 +350,47 @@ export default defineComponent({
 
 .action-buttons {
   position: absolute;
-  right: 20px;
   bottom: 20px;
+  right: 40px;
   display: flex;
   gap: 12px;
+  z-index: 1;
 }
 
 .action-button {
-  width: 56px !important;
-  height: 56px !important;
-  transition: all 0.3s ease;
-}
-
-.action-button :deep(.el-icon) {
-  font-size: 24px;
-}
-
-.redraw-button {
-  background: #8B5CF6;
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1;
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   border: none;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
 
-.redraw-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
-  background: #7C3AED;
+.action-button:hover {
+  transform: scale(1.1);
 }
 
-.download-button {
-  background: #10B981;
-  border: none;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+.action-button i {
+  font-size: 1.1em;
 }
 
-.download-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
-  background: #059669;
+.action-button.edit i {
+  color: var(--edit-color);
 }
 
-.delete-button {
-  background: #EF4444;
-  border: none;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+.action-button.download i {
+  color: var(--download-color);
 }
 
-.delete-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
-  background: #DC2626;
+.action-button.delete i {
+  color: var(--delete-color);
 }
 
 /* 删除对话框样式 */
@@ -515,7 +509,7 @@ export default defineComponent({
     height: 48px !important;
   }
 
-  .action-button :deep(.el-icon) {
+  .action-button i {
     font-size: 20px;
   }
 

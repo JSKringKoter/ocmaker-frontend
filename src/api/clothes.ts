@@ -27,6 +27,7 @@ export interface ClothesData {
     shoes?: string
     otherDecorate?: string
     clothesOcId: number
+    collect?: boolean
   }
 
 // 更新服装时使用的接口
@@ -82,9 +83,9 @@ export const collectClothes = async (params: CollectClothesParams) => {
 }
 
 // 设置最爱服装的请求参数接口
-interface SetFavouriteVO {
+export interface SetFavouriteVO {
   ocId: number
-  clothesId: number
+  clothesId: number | null
 }
 
 // 设置最爱服装的API函数
