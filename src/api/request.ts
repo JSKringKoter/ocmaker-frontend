@@ -29,13 +29,15 @@ request.interceptors.response.use(
     return response.data
   },
   error => {
-    if (error.response) {
+    if (error.response.status === 401) {
+      localStorage.removeItem('token')
+      router.push('/login')
+      return
+    }
+    if (error.response.data) {
+      ElMessage.error(error.response.data)
+    } else if(error.response) {
       switch (error.response.status) {
-        case 401:
-          // token过期或无效
-          localStorage.removeItem('token')
-          router.push('/login')
-          break
         case 403:
           // 权限不足
           ElMessage.error('权限不足')

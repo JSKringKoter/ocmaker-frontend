@@ -1,9 +1,9 @@
 <template>
-  <div class="login-container">
-    <div class="login-card">
-      <div class="login-header">
+  <div class="register-container">
+    <div class="register-card">
+      <div class="register-header">
         <h2>Blues. OC Maker</h2>
-        <p>登录您的账号</p>
+        <p>创建您的账号</p>
       </div>
       <div class="form-content">
         <div class="form-group">
@@ -11,6 +11,7 @@
           <el-input 
             v-model="form.username" 
             placeholder="请输入用户名"
+            :maxlength="32"
           >
             <template #prefix>
               <el-icon><User /></el-icon>
@@ -24,8 +25,23 @@
             v-model="form.password" 
             type="password" 
             placeholder="请输入密码"
+            :maxlength="32"
             show-password
-            @keyup.enter="handleLogin"
+          >
+            <template #prefix>
+              <el-icon><Lock /></el-icon>
+            </template>
+          </el-input>
+        </div>
+
+        <div class="form-group">
+          <label>确认密码</label>
+          <el-input 
+            v-model="form.confirmPassword" 
+            type="password" 
+            placeholder="请再次输入密码"
+            :maxlength="32"
+            show-password
           >
             <template #prefix>
               <el-icon><Lock /></el-icon>
@@ -36,14 +52,14 @@
         <div class="form-actions">
           <el-button 
             type="primary" 
-            :loading="isLoggingIn"
-            @click="handleLogin"
+            :loading="isRegistering"
+            @click="handleRegister"
           >
-            登录
+            注册
           </el-button>
-          <div class="register-link">
-            还没有账号？
-            <router-link to="/register">立即注册</router-link>
+          <div class="login-link">
+            已有账号？
+            <router-link to="/login">立即登录</router-link>
           </div>
         </div>
       </div>
@@ -55,12 +71,11 @@
 import { defineComponent, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
-import { useRouter, useRoute } from 'vue-router'
-import { login } from '@/api/auth'
-import type { LoginResponse } from '@/api/auth'
+import { useRouter } from 'vue-router'
+import { register } from '@/api/auth'
 
 export default defineComponent({
-  name: 'LoginView',
+  name: 'RegisterView',
 
   components: {
     User,
@@ -69,12 +84,12 @@ export default defineComponent({
 
   setup() {
     const router = useRouter()
-    const route = useRoute()
-    const isLoggingIn = ref(false)
+    const isRegistering = ref(false)
 
     const form = reactive({
       username: '',
-      password: ''
+      password: '',
+      confirmPassword: ''
     })
 
     const validateForm = () => {
@@ -86,53 +101,51 @@ export default defineComponent({
         ElMessage.warning('请输入密码')
         return false
       }
+      if (!form.confirmPassword) {
+        ElMessage.warning('请确认密码')
+        return false
+      }
+      if (form.password !== form.confirmPassword) {
+        ElMessage.warning('两次输入的密码不一致')
+        return false
+      }
+      if (form.password.length < 6) {
+        ElMessage.warning('密码长度不能少于6位')
+        return false
+      }
       return true
     }
 
-    const handleLogin = async () => {
+    const handleRegister = async () => {
       if (!validateForm()) return
 
       try {
-        isLoggingIn.value = true
-        const response = await login({
+        isRegistering.value = true
+        await register({
           username: form.username.trim(),
           password: form.password
         })
-
-        const data = response.data as LoginResponse
-        if (data) {
-          // 保存token和用户名
-          localStorage.setItem('token', data.token)
-          sessionStorage.setItem('userName', data.username)
-          
-          ElMessage.success('登录成功')
-          
-          // 如果有重定向地址，则跳转到重定向地址
-          const redirect = route.query.redirect as string
-          router.push(redirect || '/my-oc')
-        }
+        ElMessage.success('注册成功')
+        router.push('/login')
       } catch (error: any) {
-        if (error.response?.data?.message) {
-          ElMessage.error(error.response.data.message)
-        } else {
-          ElMessage.error('登录失败，请重试')
-        }
+        form.password = ''
+        form.confirmPassword = ''
       } finally {
-        isLoggingIn.value = false
+        isRegistering.value = false
       }
     }
 
     return {
       form,
-      isLoggingIn,
-      handleLogin
+      isRegistering,
+      handleRegister
     }
   }
 })
 </script>
 
 <style scoped>
-.login-container {
+.register-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -149,7 +162,7 @@ export default defineComponent({
   overflow: hidden;
 }
 
-.login-card {
+.register-card {
   width: 100%;
   max-width: 420px;
   padding: 40px;
@@ -159,18 +172,18 @@ export default defineComponent({
   backdrop-filter: blur(10px);
 }
 
-.login-header {
+.register-header {
   text-align: center;
   margin-bottom: 40px;
 }
 
-.login-header h2 {
+.register-header h2 {
   color: #2c3e50;
   font-size: 28px;
   margin: 0 0 10px;
 }
 
-.login-header p {
+.register-header p {
   color: #666;
   font-size: 16px;
   margin: 0;
@@ -243,25 +256,25 @@ export default defineComponent({
   border-color: #6D28D9;
 }
 
-.register-link {
+.login-link {
   font-size: 0.95rem;
   color: #4a5568;
 }
 
-.register-link a {
+.login-link a {
   color: #8B5CF6;
   text-decoration: none;
   font-weight: 500;
   transition: all 0.3s ease;
 }
 
-.register-link a:hover {
+.login-link a:hover {
   color: #7C3AED;
   text-decoration: underline;
 }
 
 @media (max-width: 480px) {
-  .login-card {
+  .register-card {
     margin: 20px;
     padding: 30px;
   }

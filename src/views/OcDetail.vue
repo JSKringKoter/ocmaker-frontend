@@ -341,25 +341,68 @@ export default defineComponent({
       newClothesDialogVisible: false,
       selectedClothesId: null as number | null,
       clothesDetailVisible: false,
-      isLoading: true
+      isLoading: true,
+      isClothesLoading: false
     }
   },
 
   created() {
-    this.fetchOcDetail(this.ocId)
-    this.fetchClothesList()
+    this.fetchInitialData()
   },
 
   methods: {
+    // 初始化数据加载
+    async fetchInitialData() {
+      this.isLoading = true
+      try {
+        // 先获取角色信息
+        const response = await getOcDetail(this.ocId)
+        if (response.data) {
+          this.ocDetail = response.data
+          // 只有当角色存在时才获取服装列表
+          await this.fetchClothesList()
+        } else {
+          this.router.replace('/my-oc')
+          ElMessage.info('角色不存在')
+        }
+      } catch (error: any) {
+        if (error.response?.status === 404) {
+          this.router.replace('/my-oc')
+          ElMessage.info('角色不存在')
+        }
+      } finally {
+        this.isLoading = false
+      }
+    },
+
     async fetchOcDetail(ocId: number) {
       try {
-        this.isLoading = true
         const response = await getOcDetail(ocId)
         if (response.data) {
           this.ocDetail = response.data
+        } else {
+          this.router.replace('/my-oc')
+          ElMessage.info('角色不存在')
+        }
+      } catch (error: any) {
+        if (error.response?.status === 404) {
+          this.router.replace('/my-oc')
+          ElMessage.info('角色不存在')
+        }
+      }
+    },
+
+    async fetchClothesList() {
+      try {
+        this.isClothesLoading = true
+        const response = await getClothesBaseInfo(this.ocId)
+        if (response.data) {
+          this.clothesList = response.data
         }
       } catch (error) {
-        ElMessage.error('获取角色详情失败')
+        ElMessage.error('获取服装列表失败')
+      } finally {
+        this.isClothesLoading = false
       }
     },
 
@@ -371,7 +414,7 @@ export default defineComponent({
       try {
         await updateOcDetail(this.ocId, updatedData)
         ElMessage.success('修改成功')
-        this.fetchOcDetail(this.ocId)
+        this.fetchInitialData()
         this.editDialogVisible = false
       } catch (error) {
         ElMessage.error('修改失败')
@@ -396,19 +439,6 @@ export default defineComponent({
       }
     },
 
-    async fetchClothesList() {
-      try {
-        const response = await getClothesBaseInfo(this.ocId)
-        if (response.data) {
-          this.clothesList = response.data
-        }
-      } catch (error) {
-        ElMessage.error('获取服装列表失败')
-      } finally {
-        this.isLoading = false
-      }
-    },
-
     handleClothesClick(clothesId: number) {
       this.selectedClothesId = clothesId
       this.$nextTick(() => {
@@ -429,9 +459,12 @@ export default defineComponent({
       this.fetchClothesList()
     },
 
-    handleSetFavouriteSuccess() {
-      this.fetchOcDetail(this.ocId)
-      this.fetchClothesList()
+    async handleSetFavouriteSuccess() {
+      // 只重新获取数据
+      await Promise.all([
+        this.fetchOcDetail(this.ocId),
+        this.fetchClothesList()
+      ])
     },
 
     async handleCollectClick(clothes: ClothesBaseInfo) {
