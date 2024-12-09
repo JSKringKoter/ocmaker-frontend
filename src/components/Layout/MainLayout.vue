@@ -1,83 +1,138 @@
 <template>
   <div class="layout">
-    <!-- 顶部导航栏 -->
-    <header class="header">
-      <div class="header-left">
-        <el-button type="text" @click="toggleSidebar">
-          <i class="fas fa-bars"></i>
-        </el-button>
-        <h2>Blues. OC Maker</h2>
-      </div>
-      <div class="header-right">
-        <el-dropdown>
-          <span class="user-profile">
-            <i class="fas fa-user-circle"></i>
-            <span>{{ userName }}</span>
-          </span>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item @click="handleLogout">
-                <i class="fas fa-sign-out-alt"></i> 退出登录
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-      </div>
-    </header>
-
-    <!-- 侧边栏 -->
-    <el-drawer
-      v-model="sidebarVisible"
-      direction="ltr"
-      size="250px"
-      :with-header="false"
-      :modal="true"
-      :append-to-body="true"
-      class="sidebar-drawer"
+    <LoadingWrapper 
+      :loading="isLoadingBackground"
+      loading-text="加载中..."
     >
-      <div class="sidebar">
-        <div class="sidebar-header">
-          <h3>导航菜单</h3>
-        </div>
-        <el-menu
-          :default-active="activeMenu"
-          class="sidebar-menu"
-          @select="handleSelect"
-        >
-          <el-menu-item index="/my-oc">
-            <i class="fas fa-user-friends"></i>
-            <span>我的角色</span>
-          </el-menu-item>
-          <el-menu-item index="/settings">
-            <i class="fas fa-cog"></i>
-            <span>设置</span>
-          </el-menu-item>
-        </el-menu>
+      <div 
+        class="layout-background"
+        :class="{ 'loaded': backgroundLoaded }"
+      ></div>
+      
+      <div v-if="backgroundError" class="background-error">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>背景加载失败</span>
       </div>
-    </el-drawer>
 
-    <!-- 主要内容区域 -->
-    <main class="main-content">
-      <slot></slot>
-    </main>
+      <div v-show="backgroundLoaded" class="layout-content">
+        <!-- 顶部导航栏 -->
+        <header class="header">
+          <div class="header-left">
+            <el-button type="text" @click="toggleSidebar">
+              <i class="fas fa-bars"></i>
+            </el-button>
+            <h2>
+              Blues. OC Maker
+              <template v-if="$slots.title">
+                <span class="title-separator">/</span>
+                <slot name="title"></slot>
+              </template>
+            </h2>
+          </div>
+          <div class="header-right">
+            <el-dropdown>
+              <span class="user-profile">
+                <i class="fas fa-user-circle"></i>
+                <span>{{ userName }}</span>
+              </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item @click="handleLogout">
+                    <i class="fas fa-sign-out-alt"></i> 退出登录
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+        </header>
+
+        <!-- 侧边栏 -->
+        <el-drawer
+          v-model="sidebarVisible"
+          direction="ltr"
+          size="250px"
+          :with-header="false"
+          :modal="true"
+          :append-to-body="true"
+          class="sidebar-drawer"
+        >
+          <div class="sidebar">
+            <div class="sidebar-header">
+              <h3>导航菜单</h3>
+            </div>
+            <el-menu
+              :default-active="activeMenu"
+              class="sidebar-menu"
+              @select="handleSelect"
+            >
+              <el-menu-item index="/my-oc">
+                <i class="fas fa-user-friends"></i>
+                <span>我的角色</span>
+              </el-menu-item>
+              <el-menu-item index="/settings">
+                <i class="fas fa-cog"></i>
+                <span>设置</span>
+              </el-menu-item>
+            </el-menu>
+          </div>
+        </el-drawer>
+
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+          <slot></slot>
+        </main>
+      </div>
+    </LoadingWrapper>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { Loading } from '@element-plus/icons-vue'
+import LoadingWrapper from '@/components/LoadingWrapper.vue'
 
 export default defineComponent({
   name: 'MainLayout',
+
+  components: {
+    LoadingWrapper
+  },
+
   setup() {
     const router = useRouter()
     const route = useRoute()
     const sidebarVisible = ref(false)
     const userName = ref('')
+    const backgroundLoaded = ref(false)
+    const isLoadingBackground = ref(true)
+    const backgroundError = ref(false)
+
+    // 预加载背景图
+    const preloadBackground = () => {
+      const img = new Image()
+      const bgUrl = '/images/bg.jpg'
+      
+      img.onload = () => {
+        document.documentElement.style.setProperty('--bg-image', `url(${bgUrl})`)
+        backgroundLoaded.value = true
+        isLoadingBackground.value = false
+        backgroundError.value = false
+      }
+      
+      img.onerror = () => {
+        isLoadingBackground.value = false
+        backgroundError.value = true
+      }
+      
+      img.src = bgUrl
+    }
 
     onMounted(() => {
       // 从sessionStorage获取用户名
       userName.value = sessionStorage.getItem('userName') || '未登录'
+      // 预加载背景图
+      preloadBackground()
     })
 
     const activeMenu = computed(() => route.path)
@@ -104,24 +159,118 @@ export default defineComponent({
       toggleSidebar,
       handleSelect,
       handleLogout,
-      userName
+      userName,
+      backgroundLoaded,
+      isLoadingBackground,
+      backgroundError
     }
   }
 })
 </script>
 
 <style scoped>
+:root {
+  --bg-image: none;
+}
+
 .layout {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   width: 100%;
   position: relative;
+  background-color: #f5f5f5;
+}
+
+.layout-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: var(--bg-image);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.layout-background.loaded {
+  opacity: 1;
+}
+
+.layout-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(5px);
+  z-index: 0;
+}
+
+.background-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 1;
+  gap: 12px;
+}
+
+.background-loading .loading-icon {
+  font-size: 32px;
+  color: var(--el-color-primary);
+  animation: rotate 1s linear infinite;
+}
+
+.background-error {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  z-index: 9999;
+  gap: 12px;
+}
+
+.background-error i {
+  font-size: 32px;
+  color: var(--el-color-danger);
+}
+
+.background-error span {
+  color: var(--el-color-danger);
+  font-size: 14px;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .header {
   height: 60px;
-  background: white;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
@@ -184,7 +333,7 @@ export default defineComponent({
   overflow-x: hidden;
   box-sizing: border-box;
   position: relative;
-  background: #f8f9fa;
+  z-index: 1;
 }
 
 .sidebar {
@@ -240,5 +389,20 @@ export default defineComponent({
   .header-left h2 {
     font-size: 1.2rem;
   }
+}
+
+.title-separator {
+  margin: 0 8px;
+  color: #718096;
+  font-weight: normal;
+}
+
+.layout-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
 }
 </style> 

@@ -7,151 +7,187 @@
     destroy-on-close
     class="clothes-detail-dialog"
   >
-    <div v-if="clothesDetail" class="clothes-detail-container">
-      <div class="left-section">
-        <div class="clothes-detail">
-          <div class="detail-card">
-            <div class="card-header">
-              <h3>基本信息</h3>
-            </div>
-            <div class="card-content">
-              <div class="detail-text">
-                <label>服装描述</label>
-                <p :class="{ 'empty-value': !clothesDetail.describe }">
-                  {{ clothesDetail.describe || '没有内容' }}
-                </p>
+    <LoadingWrapper :loading="isLoading">
+      <div v-if="clothesDetail" class="clothes-detail-container">
+        <div class="left-section">
+          <div class="clothes-detail">
+            <div class="detail-card">
+              <div class="card-header">
+                <h3>基本信息</h3>
               </div>
+              <div class="card-content">
+                <div class="detail-text">
+                  <label>服装描述</label>
+                  <p :class="{ 'empty-value': !clothesDetail.describe }">
+                    {{ clothesDetail.describe || '没有内容' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="detail-card">
+              <div class="card-header">
+                <h3>服装细节</h3>
+              </div>
+              <div class="card-content">
+                <div class="detail-grid">
+                  <div class="detail-item">
+                    <label>帽饰</label>
+                    <span :class="{ 'empty-value': !clothesDetail.hat }">
+                      {{ clothesDetail.hat || '没有内容' }}
+                    </span>
+                  </div>
+                  
+                  <div class="detail-item">
+                    <label>面部装饰</label>
+                    <span :class="{ 'empty-value': !clothesDetail.faceDecorate }">
+                      {{ clothesDetail.faceDecorate || '没有内容' }}
+                    </span>
+                  </div>
+
+                  <div class="detail-item">
+                    <label>上装</label>
+                    <span :class="{ 'empty-value': !clothesDetail.uppers }">
+                      {{ clothesDetail.uppers || '没有内容' }}
+                    </span>
+                  </div>
+
+                  <div class="detail-item">
+                    <label>腰带</label>
+                    <span :class="{ 'empty-value': !clothesDetail.belt }">
+                      {{ clothesDetail.belt || '没有内容' }}
+                    </span>
+                  </div>
+
+                  <div class="detail-item">
+                    <label>下装</label>
+                    <span :class="{ 'empty-value': !clothesDetail.bottoms }">
+                      {{ clothesDetail.bottoms || '没有内容' }}
+                    </span>
+                  </div>
+
+                  <div class="detail-item">
+                    <label>腿部装饰</label>
+                    <span :class="{ 'empty-value': !clothesDetail.legDecorate }">
+                      {{ clothesDetail.legDecorate || '没有内容' }}
+                    </span>
+                  </div>
+
+                  <div class="detail-item">
+                    <label>鞋子</label>
+                    <span :class="{ 'empty-value': !clothesDetail.shoes }">
+                      {{ clothesDetail.shoes || '没有内容' }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="detail-text">
+                  <label>其他装饰</label>
+                  <p :class="{ 'empty-value': !clothesDetail.otherDecorate }">
+                    {{ clothesDetail.otherDecorate || '没有内容' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <el-tooltip content="删除服装" placement="top" effect="light">
+                <div class="action-button delete" @click="handleDelete">
+                  <i class="fas fa-trash-alt"></i>
+                </div>
+              </el-tooltip>
+              
+              <el-tooltip content="修改服装" placement="top" effect="light">
+                <div class="action-button edit" @click="handleEdit">
+                  <i class="fas fa-edit"></i>
+                </div>
+              </el-tooltip>
+              
+              <el-tooltip 
+                :content="clothesDetail?.collect ? '取消收藏' : '收藏'" 
+                placement="top" 
+                effect="light"
+              >
+                <div 
+                  class="action-button collect" 
+                  :class="{ 'active': clothesDetail?.collect }"
+                  @click="handleCollectClick"
+                >
+                  <i :class="[
+                    clothesDetail?.collect ? 'fas fa-star' : 'far fa-star'
+                  ]"></i>
+                </div>
+              </el-tooltip>
+              
+              <el-tooltip 
+                :content="ocDetail?.favouriteClothesId === clothesId ? '取消招牌服装' : '设为招牌服装'" 
+                placement="top" 
+                effect="light"
+              >
+                <div 
+                  class="action-button favourite" 
+                  :class="{ 'active': ocDetail?.favouriteClothesId === clothesId }"
+                  @click="handleSetAsFavourite"
+                >
+                  <i class="fas fa-flag"></i>
+                </div>
+              </el-tooltip>
             </div>
           </div>
+        </div>
 
-          <div class="detail-card">
-            <div class="card-header">
-              <h3>服装细节</h3>
-            </div>
-            <div class="card-content">
-              <div class="detail-grid">
-                <div class="detail-item">
-                  <label>帽饰</label>
-                  <span :class="{ 'empty-value': !clothesDetail.hat }">
-                    {{ clothesDetail.hat || '没有内容' }}
-                  </span>
-                </div>
-                
-                <div class="detail-item">
-                  <label>面部装饰</label>
-                  <span :class="{ 'empty-value': !clothesDetail.faceDecorate }">
-                    {{ clothesDetail.faceDecorate || '没有内容' }}
-                  </span>
-                </div>
-
-                <div class="detail-item">
-                  <label>上装</label>
-                  <span :class="{ 'empty-value': !clothesDetail.uppers }">
-                    {{ clothesDetail.uppers || '没有内容' }}
-                  </span>
-                </div>
-
-                <div class="detail-item">
-                  <label>腰带</label>
-                  <span :class="{ 'empty-value': !clothesDetail.belt }">
-                    {{ clothesDetail.belt || '没有内容' }}
-                  </span>
-                </div>
-
-                <div class="detail-item">
-                  <label>下装</label>
-                  <span :class="{ 'empty-value': !clothesDetail.bottoms }">
-                    {{ clothesDetail.bottoms || '没有内容' }}
-                  </span>
-                </div>
-
-                <div class="detail-item">
-                  <label>腿部装饰</label>
-                  <span :class="{ 'empty-value': !clothesDetail.legDecorate }">
-                    {{ clothesDetail.legDecorate || '没有内容' }}
-                  </span>
-                </div>
-
-                <div class="detail-item">
-                  <label>鞋子</label>
-                  <span :class="{ 'empty-value': !clothesDetail.shoes }">
-                    {{ clothesDetail.shoes || '没有内容' }}
-                  </span>
-                </div>
-              </div>
-
-              <div class="detail-text">
-                <label>其他装饰</label>
-                <p :class="{ 'empty-value': !clothesDetail.otherDecorate }">
-                  {{ clothesDetail.otherDecorate || '没有内容' }}
-                </p>
-              </div>
-            </div>
+        <div class="ai-drawing-section">
+          <div class="section-header">
+            <h3>视觉化</h3>
           </div>
-
-          <div class="action-buttons">
-            <el-tooltip content="删除服装" placement="top" effect="light">
-              <div class="action-button delete" @click="handleDelete">
-                <i class="fas fa-trash-alt"></i>
+          
+          <div class="section-content">
+            <div v-if="clothesDetail.imgUrl" class="clothes-image" @click="handlePreviewImage">
+              <div class="image-container" :class="{ 'loading': imageLoading, 'error': imageError }">
+                <img 
+                  :src="clothesDetail.imgUrl" 
+                  :alt="clothesDetail.name"
+                  @load="handleImageLoad"
+                  @error="handleImageError"
+                >
+                <div v-if="imageLoading" class="image-loading-overlay">
+                  <el-icon class="loading-icon"><Loading /></el-icon>
+                  <span>图片加载中...</span>
+                </div>
+              
+                <div v-if="imageError" class="image-error-overlay">
+                  <i class="fas fa-exclamation-circle"></i>
+                  <span>图片加载失败</span>
+                  <div class="error-actions">
+                    <el-tooltip content="重新加载" placement="bottom" effect="light">
+                      <div 
+                        class="action-button retry" 
+                        @click.stop="handleRetryLoad"
+                      >
+                        <i class="fas fa-redo"></i>
+                      </div>
+                    </el-tooltip>
+                    <el-tooltip content="重新生成" placement="bottom" effect="light">
+                      <div 
+                        class="action-button redraw" 
+                        @click.stop="handleStartDrawing"
+                      >
+                        <i class="fas fa-paint-brush"></i>
+                      </div>
+                    </el-tooltip>
+                  </div>
+                </div>
               </div>
-            </el-tooltip>
-            
-            <el-tooltip content="修改服装" placement="top" effect="light">
-              <div class="action-button edit" @click="handleEdit">
-                <i class="fas fa-edit"></i>
-              </div>
-            </el-tooltip>
-            
-            <el-tooltip 
-              :content="clothesDetail?.collect ? '取消收藏' : '收藏'" 
-              placement="top" 
-              effect="light"
-            >
-              <div 
-                class="action-button collect" 
-                :class="{ 'active': clothesDetail?.collect }"
-                @click="handleCollectClick"
-              >
-                <i :class="[
-                  clothesDetail?.collect ? 'fas fa-star' : 'far fa-star'
-                ]"></i>
-              </div>
-            </el-tooltip>
-            
-            <el-tooltip 
-              :content="ocDetail?.favouriteClothesId === clothesId ? '取消招牌服装' : '设为招牌服装'" 
-              placement="top" 
-              effect="light"
-            >
-              <div 
-                class="action-button favourite" 
-                :class="{ 'active': ocDetail?.favouriteClothesId === clothesId }"
-                @click="handleSetAsFavourite"
-              >
-                <i class="fas fa-flag"></i>
-              </div>
-            </el-tooltip>
+            </div>
+            <div v-else class="no-image-placeholder" @click="handleStartDrawing">
+              <i class="fas fa-paint-brush"></i>
+              <p class="placeholder-title">点击启动AI绘画</p>
+              <span class="placeholder-hint">根据服装描述自动生成插画</span>
+            </div>
           </div>
         </div>
       </div>
-
-      <div class="ai-drawing-section">
-        <div class="section-header">
-          <h3>视觉化</h3>
-        </div>
-        
-        <div class="section-content">
-          <div v-if="clothesDetail.imgUrl" class="clothes-image" @click="handlePreviewImage">
-            <img :src="clothesDetail.imgUrl" :alt="clothesDetail.name">
-          </div>
-          <div v-else class="no-image-placeholder" @click="handleStartDrawing">
-            <i class="fas fa-paint-brush"></i>
-            <p class="placeholder-title">点击启动AI绘画</p>
-            <span class="placeholder-hint">根据服装描述自动生成插画</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    </LoadingWrapper>
 
     <EditClothes
       v-if="clothesDetail"
@@ -178,7 +214,7 @@
         </div>
         <div class="delete-message">
           <h3>删除服装</h3>
-          <p>确��要删除这件服装吗？</p>
+          <p>确认删除这件服装吗？</p>
           <p class="warning-text">此操作不可恢复</p>
         </div>
       </div>
@@ -225,13 +261,20 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, type PropType } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getClothesDetail, updateClothes, deleteClothes, setAsFavourite, collectClothes, type ClothesData } from '@/api/clothes'
 import EditClothes from './EditClothes.vue'
-import { Edit, Delete, Warning, Close } from '@element-plus/icons-vue'
+import { Edit, Delete, Warning, Close, Loading } from '@element-plus/icons-vue'
 import AIDrawingDialog from './AIDrawingDialog.vue'
 import ImagePreview from './ImagePreview.vue'
+import LoadingWrapper from '@/components/LoadingWrapper.vue'
+
+// 定义OC详情类型
+interface OcDetailType {
+  favouriteClothesId: number | null;
+  [key: string]: any;
+}
 
 export default defineComponent({
   name: 'ClothesDetail',
@@ -241,7 +284,9 @@ export default defineComponent({
     Warning,
     Close,
     AIDrawingDialog,
-    ImagePreview
+    ImagePreview,
+    LoadingWrapper,
+    Loading
   },
 
   props: {
@@ -262,12 +307,12 @@ export default defineComponent({
       required: true
     },
     ocDetail: {
-      type: Object,
+      type: Object as PropType<OcDetailType>,
       required: true
     }
   },
 
-  emits: ['update:visible', 'delete-success', 'set-favourite-success'],
+  emits: ['update:visible', 'delete-success', 'set-favourite-success', 'collect-success', 'drawing-success'],
 
   data() {
     return {
@@ -277,7 +322,9 @@ export default defineComponent({
       deleteDialogVisible: false,
       isDeleting: false,
       showDrawingDialog: false,
-      showImagePreview: false
+      showImagePreview: false,
+      imageLoading: true,
+      imageError: false
     }
   },
 
@@ -376,6 +423,8 @@ export default defineComponent({
     handleDrawingSuccess() {
       // 重新获取服装详情，刷新图片
       this.fetchClothesDetail()
+      // 通知父组件更新列表
+      this.$emit('drawing-success')
     },
 
     handlePreviewImage() {
@@ -417,9 +466,46 @@ export default defineComponent({
           this.clothesDetail.collect = !this.clothesDetail.collect
         }
         
-        ElMessage.success(this.clothesDetail?.collect ? '已收藏服装' : '已取消收藏')
+        ElMessage.success(this.clothesDetail?.collect ? '已收藏服装' : '已取消���藏')
+        // 触发收藏状态更新事件
+        this.$emit('collect-success')
       } catch (error) {
         ElMessage.error('操作失败，请重试')
+      }
+    },
+
+    handleImageLoad() {
+      this.imageLoading = false
+      this.imageError = false
+    },
+
+    handleImageError() {
+      this.imageLoading = false
+      this.imageError = true
+    },
+
+    handleRetryLoad() {
+      const currentDetail = this.clothesDetail
+      if (!currentDetail?.imgUrl) return
+      
+      this.imageLoading = true
+      this.imageError = false
+      
+      // 通过添加时间戳强制浏览器重新加载图片
+      const img = new Image()
+      const newUrl = `${currentDetail.imgUrl}?t=${Date.now()}`
+      img.src = newUrl
+      
+      img.onload = () => {
+        if (this.clothesDetail) {
+          this.clothesDetail.imgUrl = newUrl
+        }
+        this.imageLoading = false
+      }
+      
+      img.onerror = () => {
+        this.imageError = true
+        this.imageLoading = false
       }
     }
   }
@@ -535,7 +621,7 @@ export default defineComponent({
 .empty-value {
   color: #9CA3AF !important; /* 浅灰色文字 */
   background: transparent !important; /* 移除背景色 */
-  font-style: italic; /* ��体 */
+  font-style: italic; /* 体 */
   font-weight: 300; /* 更细的字重 */
 }
 
@@ -651,7 +737,7 @@ export default defineComponent({
   font-size: 0.9rem;
 }
 
-/* 响应式调整 */
+/* 响应���调整 */
 @media screen and (max-width: 1440px) {
   .clothes-image,
   .no-image-placeholder {
@@ -732,7 +818,7 @@ export default defineComponent({
   z-index: 1;
 }
 
-/* 收藏和操作按钮的共同样式 */
+/* 收藏和操作按��的共同样式 */
 .action-button {
   position: relative;
   width: 32px;
@@ -851,7 +937,7 @@ export default defineComponent({
   gap: 12px;
 }
 
-/* 响应式调整 */
+/* 响应式调�� */
 @media (max-width: 768px) {
   .delete-content {
     flex-direction: column;
@@ -866,6 +952,123 @@ export default defineComponent({
   .dialog-footer {
     padding: 12px 16px;
   }
+}
+
+.image-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.image-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+  gap: 16px;
+  padding: 20px;
+}
+
+.loading-icon {
+  font-size: 24px;
+  color: var(--primary-color);
+}
+
+.image-error-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+  gap: 16px;
+  padding: 20px;
+}
+
+.error-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.error-actions .action-button {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+}
+
+.error-actions .action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.error-actions .action-button i {
+  font-size: 1.2em;
+}
+
+.error-actions .action-button.retry {
+  background: var(--primary-color);
+}
+
+.error-actions .action-button.retry i {
+  color: white;
+}
+
+.error-actions .action-button.redraw {
+  background: var(--edit-color);
+}
+
+.error-actions .action-button.redraw i {
+  color: white;
+}
+
+/* 添加按钮点击效果 */
+.error-actions .action-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 添加工具提示效果 */
+.error-actions .action-button::after {
+  content: attr(title);
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+}
+
+.error-actions .action-button:hover::after {
+  opacity: 1;
+  visibility: visible;
 }
 
 </style> 

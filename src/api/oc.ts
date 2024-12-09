@@ -71,3 +71,8 @@ export const updateOcDetail = async (ocId: number, data: OcDetail) => {
 export const deleteOc = async (ocId: number) => {
   return request.delete(`/oc/delete/${ocId}`)
 }
+
+// 批量删除OC的API函数
+export const batchDeleteOcs = async (ocIds: number[]) => {
+  return request.delete('/oc/batch-delete', { data: ocIds })
+}

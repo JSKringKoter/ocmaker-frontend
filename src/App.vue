@@ -1,7 +1,11 @@
 <template>
   <div id="app">
     <div class="app-container">
-      <router-view></router-view>
+      <router-view v-slot="{ Component }">
+        <transition name="fade-transform" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
     </div>
   </div>
 </template>
@@ -38,18 +42,36 @@ html, body {
 .app-container {
   display: flex;
   height: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
 }
 
+/* 页面切换动画 */
+.fade-transform-enter-active,
+.fade-transform-leave-active {
+  transition: all 0.5s ease;
+}
+
+.fade-transform-enter-from {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.fade-transform-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+/* 滚动条样式 */
 ::-webkit-scrollbar {
+  width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
   background: #f1f1f1;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
