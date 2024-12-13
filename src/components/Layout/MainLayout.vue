@@ -6,6 +6,7 @@
     >
       <div 
         class="layout-background"
+        :style="backgroundStyle"
         :class="{ 'loaded': backgroundLoaded }"
       ></div>
       
@@ -37,6 +38,9 @@
               </span>
               <template #dropdown>
                 <el-dropdown-menu>
+                  <el-dropdown-item @click="$router.push('/settings')">
+                    <i class="fas fa-cog"></i> 设置
+                  </el-dropdown-item>
                   <el-dropdown-item @click="handleLogout">
                     <i class="fas fa-sign-out-alt"></i> 退出登录
                   </el-dropdown-item>
@@ -87,10 +91,24 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue'
+import { defineComponent, ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Loading } from '@element-plus/icons-vue'
 import LoadingWrapper from '@/components/LoadingWrapper.vue'
+
+interface BackgroundUpdateEvent extends CustomEvent {
+  detail: {
+    background: string
+    blur: number
+    darken: number
+  }
+}
+
+declare function handleBackgroundUpdate(event: Event): void
+
+const BACKGROUND_KEY = 'app_background'
+const BLUR_LEVEL_KEY = 'background_blur'
+const DARKEN_LEVEL_KEY = 'background_darken'
 
 export default defineComponent({
   name: 'MainLayout',
@@ -107,14 +125,42 @@ export default defineComponent({
     const backgroundLoaded = ref(false)
     const isLoadingBackground = ref(true)
     const backgroundError = ref(false)
+    const backgroundStyle = ref({
+      backgroundImage: '',
+      filter: '',
+      opacity: 0
+    })
 
-    // 预加载背景图
-    const preloadBackground = () => {
+    // 加载背景设置
+    const loadBackgroundSettings = () => {
+      const bgUrl = localStorage.getItem(BACKGROUND_KEY)
+      const blurLevel = parseInt(localStorage.getItem(BLUR_LEVEL_KEY) || '0')
+      const darkenLevel = parseInt(localStorage.getItem(DARKEN_LEVEL_KEY) || '15')
+
+      if (bgUrl) {
+        const img = new Image()
+        img.onload = () => {
+          updateBackgroundStyle(bgUrl, blurLevel, darkenLevel)
+          backgroundLoaded.value = true
+          isLoadingBackground.value = false
+          backgroundError.value = false
+        }
+        img.onerror = () => {
+          loadDefaultBackground()
+        }
+        img.src = bgUrl
+      } else {
+        loadDefaultBackground()
+      }
+    }
+
+    // 加载默认背景
+    const loadDefaultBackground = () => {
       const img = new Image()
-      const bgUrl = '/images/bg.jpg'
+      const defaultBgUrl = '/images/bg.jpg'
       
       img.onload = () => {
-        document.documentElement.style.setProperty('--bg-image', `url(${bgUrl})`)
+        updateBackgroundStyle(defaultBgUrl, 0, 15)  // 15% 的暗度相当于 0.85 的透明度
         backgroundLoaded.value = true
         isLoadingBackground.value = false
         backgroundError.value = false
@@ -125,14 +171,51 @@ export default defineComponent({
         backgroundError.value = true
       }
       
-      img.src = bgUrl
+      img.src = defaultBgUrl
+    }
+
+    // 更新背景样式
+    const updateBackgroundStyle = (bgUrl: string, blur: number, darken: number) => {
+      backgroundStyle.value = {
+        backgroundImage: bgUrl ? `url(${bgUrl})` : 'none',
+        filter: `blur(${blur}px)`,
+        opacity: 1
+      }
+      document.documentElement.style.setProperty('--bg-overlay-opacity', ((100 - darken) / 100).toString())
+    }
+
+    // 监听背景更新事件
+    const handleBackgroundUpdate = (event: Event) => {
+      const customEvent = event as BackgroundUpdateEvent
+      const { background, blur, darken } = customEvent.detail
+      if (background) {
+        const img = new Image()
+        img.onload = () => {
+          updateBackgroundStyle(background, blur, darken)
+          backgroundLoaded.value = true
+          isLoadingBackground.value = false
+          backgroundError.value = false
+        }
+        img.onerror = () => {
+          isLoadingBackground.value = false
+          backgroundError.value = true
+        }
+        img.src = background
+      } else {
+        updateBackgroundStyle('', blur, darken)
+        backgroundLoaded.value = true
+        isLoadingBackground.value = false
+      }
     }
 
     onMounted(() => {
-      // 从sessionStorage获取用户名
       userName.value = sessionStorage.getItem('userName') || '未登录'
-      // 预加载背景图
-      preloadBackground()
+      loadBackgroundSettings()
+      window.addEventListener('background-updated', handleBackgroundUpdate)
+    })
+
+    onBeforeUnmount(() => {
+      window.removeEventListener('background-updated', handleBackgroundUpdate)
     })
 
     const activeMenu = computed(() => route.path)
@@ -147,7 +230,6 @@ export default defineComponent({
     }
 
     const handleLogout = () => {
-      // 清除登录信息
       localStorage.removeItem('token')
       sessionStorage.removeItem('userName')
       router.push('/login')
@@ -162,7 +244,8 @@ export default defineComponent({
       userName,
       backgroundLoaded,
       isLoadingBackground,
-      backgroundError
+      backgroundError,
+      backgroundStyle
     }
   }
 })
@@ -170,7 +253,7 @@ export default defineComponent({
 
 <style scoped>
 :root {
-  --bg-image: none;
+  --bg-overlay-opacity: 0.85;
 }
 
 .layout {
@@ -179,21 +262,20 @@ export default defineComponent({
   flex-direction: column;
   width: 100%;
   position: relative;
-  background-color: #f5f5f5;
 }
 
 .layout-background {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: var(--bg-image);
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
   opacity: 0;
   transition: opacity 0.3s ease;
+  z-index: 0;
 }
 
 .layout-background.loaded {
@@ -207,9 +289,8 @@ export default defineComponent({
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(5px);
-  z-index: 0;
+  background: rgba(255, 255, 255, var(--bg-overlay-opacity));
+  z-index: 1;
 }
 
 .background-loading {
@@ -398,11 +479,11 @@ export default defineComponent({
 }
 
 .layout-content {
+  position: relative;
+  z-index: 2;
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  position: relative;
-  z-index: 1;
 }
 </style> 

@@ -32,11 +32,17 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/login',
     name: 'login',
+    meta: {
+      title: '登录'
+    },
     component: () => import('@/views/LoginView.vue')
   },
   {
     path: '/register',
     name: 'register',
+    meta: {
+      title: '注册'
+    },  
     component: () => import('@/views/RegisterView.vue')
   },
   {
